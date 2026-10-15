@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { Home, List, PieChart, Repeat, Settings } from 'lucide-react';
 import clsx from 'clsx';
-import { TransactionForm } from '../forms/TransactionForm';
 
 const navItems = [
   { to: '/', icon: Home, label: 'Overview' },

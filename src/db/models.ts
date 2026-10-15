@@ -61,6 +61,7 @@ export interface Settings {
   defaultMonth: string; // current month format
   backupPreferences: any;
   googleDriveSync?: {
+    clientId?: string;
     lastBackup?: number;
     autoBackup?: boolean;
   };

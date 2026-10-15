@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import { AppShell } from './components/layout/AppShell';
 import Dashboard from './views/Dashboard';
 import Transactions from './views/Transactions';
@@ -9,7 +9,7 @@ import Settings from './views/Settings';
 
 const App: React.FC = () => {
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Routes>
         <Route path="/" element={<AppShell />}>
           <Route index element={<Dashboard />} />
@@ -19,7 +19,7 @@ const App: React.FC = () => {
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 };
 

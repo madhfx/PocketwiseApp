@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import { format } from 'date-fns';
-import { Cloud, CloudOff, Download, Upload, Save, ShieldAlert, CheckCircle2 } from 'lucide-react';
+import { Cloud, Download, Upload, Save, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { GoogleDriveService } from '../services/googleDriveService';
 
 const Settings: React.FC = () => {

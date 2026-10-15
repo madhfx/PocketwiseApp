@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import { RecurringEngine } from './recurringEngine';
 import { parseISO, format } from 'date-fns';
 import type { RecurringRule } from '../db/models';

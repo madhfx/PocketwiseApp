@@ -196,7 +196,11 @@ const Dashboard: React.FC = () => {
             <label className="block text-xs text-neutral-400 mb-3">Category</label>
             <div className="space-y-3">
               {PRESET_CATEGORIES.map(c => (
-                <label key={c} className="flex items-center space-x-3 cursor-pointer group">
+                <label 
+                  key={c} 
+                  onClick={() => setCategory(c)}
+                  className="flex items-center space-x-3 cursor-pointer group"
+                >
                   <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition ${
                     category === c ? 'border-white' : 'border-neutral-600 group-hover:border-neutral-400'
                   }`}>

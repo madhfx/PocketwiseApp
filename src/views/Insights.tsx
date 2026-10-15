@@ -117,12 +117,12 @@ const Insights: React.FC = () => {
                     dataKey="value"
                     stroke="none"
                   >
-                    {pieData.map((entry, index) => (
+                    {pieData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <RechartsTooltip 
-                    formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Amount']}
+                    formatter={(value: any) => [`₹${Number(value || 0).toLocaleString()}`, 'Amount']}
                     contentStyle={{ backgroundColor: '#111', borderColor: '#262626', borderRadius: '12px', color: '#fff' }}
                     itemStyle={{ color: '#fff' }}
                   />
@@ -156,12 +156,12 @@ const Insights: React.FC = () => {
                   <XAxis type="number" hide />
                   <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#737373', fontSize: 12 }} />
                   <RechartsTooltip
-                    formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Amount']}
+                    formatter={(value: any) => [`₹${Number(value || 0).toLocaleString()}`, 'Amount']}
                     cursor={{ fill: '#171717' }}
                     contentStyle={{ backgroundColor: '#111', borderColor: '#262626', borderRadius: '12px', color: '#fff' }}
                   />
                   <Bar dataKey="amount" fill="#f97316" radius={[0, 4, 4, 0]}>
-                    {barData.map((entry, index) => (
+                    {barData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Bar>

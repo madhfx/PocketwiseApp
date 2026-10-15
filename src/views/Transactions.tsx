@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import { format } from 'date-fns';
-import { Trash2, Search, ArrowDownCircle, ArrowUpCircle, Repeat } from 'lucide-react';
+import { Trash2, Search, Repeat } from 'lucide-react';
 import { MerchantIcon } from '../components/ui/MerchantIcon';
 
 const Transactions: React.FC = () => {
