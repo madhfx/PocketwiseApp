@@ -5,6 +5,7 @@ export const MERCHANT_DOMAINS: Record<string, string> = {
   'Zomato': 'zomato.com',
   'Blinkit': 'blinkit.com',
   'Zepto': 'zeptonow.com',
+  'BigBasket': 'bigbasket.com',
   'Amazon': 'amazon.in',
   'Flipkart': 'flipkart.com',
   'Uber': 'uber.com',
@@ -15,26 +16,31 @@ export const MERCHANT_DOMAINS: Record<string, string> = {
   'Spotify': 'spotify.com',
   'Google Pay': 'pay.google.com',
   'PhonePe': 'phonepe.com',
+  'Paytm': 'paytm.com',
+  'Rent': 'nobroker.in',
+  'Fuel': 'iocl.com'
 };
 
 interface MerchantIconProps {
   name: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'xs' | 'sm' | 'md' | 'lg';
+  className?: string;
 }
 
-export const MerchantIcon: React.FC<MerchantIconProps> = ({ name, size = 'md' }) => {
+export const MerchantIcon: React.FC<MerchantIconProps> = ({ name, size = 'md', className = '' }) => {
   const [error, setError] = useState(false);
   const domain = MERCHANT_DOMAINS[name];
 
   const sizeClass = {
-    sm: 'w-6 h-6 text-[10px]',
-    md: 'w-8 h-8 text-xs',
-    lg: 'w-10 h-10 text-sm'
+    xs: 'w-4 h-4 text-[9px] rounded-md',
+    sm: 'w-6 h-6 text-[10px] rounded-lg',
+    md: 'w-8 h-8 text-xs rounded-xl',
+    lg: 'w-10 h-10 text-sm rounded-xl'
   }[size];
 
   if (!domain || error) {
     return (
-      <div className={`${sizeClass} rounded-xl bg-white text-black flex items-center justify-center font-bold uppercase shrink-0`}>
+      <div className={`${sizeClass} bg-neutral-800 text-neutral-300 border border-neutral-700/80 flex items-center justify-center font-bold uppercase shrink-0 shadow-sm ${className}`}>
         {name.substring(0, 2)}
       </div>
     );
@@ -44,8 +50,9 @@ export const MerchantIcon: React.FC<MerchantIconProps> = ({ name, size = 'md' })
     <img 
       src={`https://logo.clearbit.com/${domain}`} 
       alt={name}
+      loading="lazy"
       onError={() => setError(true)}
-      className={`${sizeClass} rounded-xl object-cover shrink-0 bg-white p-[2px]`}
+      className={`${sizeClass} object-cover shrink-0 bg-white p-[2px] shadow-sm border border-neutral-800 ${className}`}
     />
   );
 };
