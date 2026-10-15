@@ -35,6 +35,7 @@ export default defineConfig({
         ]
       }
     })
+  ],
   base: './', // Allows running correctly on GitHub Pages
   server: {
     host: true, // Exposes dev server to local Wi-Fi network (for testing on phone)
