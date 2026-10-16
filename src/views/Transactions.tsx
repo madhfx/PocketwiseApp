@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import { format, isToday, isYesterday } from 'date-fns';
-import { Trash2, Search, X, Repeat } from 'lucide-react';
+import { Trash2, Search, X, Repeat, Heart } from 'lucide-react';
 import { MerchantIcon } from '../components/ui/MerchantIcon';
 
 const Transactions: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'expense' | 'income' | 'recurring'>('all');
+  const [likedTxs, setLikedTxs] = useState<Record<string, boolean>>({});
   
   const transactions = useLiveQuery(async () => {
     const list = await db.transactions.toArray();
@@ -19,6 +20,10 @@ const Transactions: React.FC = () => {
     if (confirm('Delete this transaction?')) {
       await db.transactions.delete(id);
     }
+  };
+
+  const toggleLike = (id: string) => {
+    setLikedTxs(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const filtered = transactions?.filter(t => {
@@ -39,7 +44,7 @@ const Transactions: React.FC = () => {
   const grouped: Record<string, typeof filtered> = {};
   filtered?.forEach(t => {
     const d = new Date(t.date);
-    let dateLabel = format(d, 'EEEE, MMM d, yyyy');
+    let dateLabel = format(d, 'EEEE, MMM d');
     if (isToday(d)) dateLabel = 'Today';
     else if (isYesterday(d)) dateLabel = 'Yesterday';
 
@@ -48,49 +53,45 @@ const Transactions: React.FC = () => {
   });
 
   return (
-    <div className="space-y-6 font-sans pb-10">
-      {/* Header */}
-      <header className="flex justify-between items-center pt-1">
-        <div>
-          <h1 className="text-xl font-bold text-white tracking-tight">Activity</h1>
-          <p className="text-xs text-neutral-500 mt-0.5">
-            {filtered ? `${filtered.length} transaction${filtered.length === 1 ? '' : 's'}` : 'Loading...'}
-          </p>
-        </div>
+    <div className="font-sans pb-16 bg-black min-h-screen text-white">
+      {/* Instagram Header */}
+      <header className="sticky top-0 z-40 bg-black/90 backdrop-blur-xl border-b border-neutral-900/80 px-4 py-3 flex items-center justify-between">
+        <h1 className="text-xl font-bold tracking-tight text-white flex items-center space-x-2">
+          <span>Activity</span>
+        </h1>
+        <span className="text-xs text-neutral-500 font-semibold">
+          {filtered?.length || 0} entries
+        </span>
       </header>
 
-      {/* Search & Filter Controls */}
-      <div className="space-y-3">
-        {/* Search Bar */}
+      {/* Search Bar & Filters */}
+      <div className="p-4 space-y-3 border-b border-neutral-900/80">
         <div className="relative flex items-center">
           <Search size={16} className="absolute left-3.5 text-neutral-500" />
           <input
             type="text"
-            placeholder="Search merchant, category, or note..."
+            placeholder="Search brands, categories..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full bg-[#121214] border border-neutral-800/90 rounded-2xl pl-10 pr-9 py-2.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-600 transition"
+            className="w-full bg-[#141416] border border-neutral-800 rounded-2xl pl-10 pr-9 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-700"
           />
           {searchTerm && (
-            <button 
-              onClick={() => setSearchTerm('')}
-              className="absolute right-3 text-neutral-500 hover:text-neutral-300 p-0.5"
-            >
+            <button onClick={() => setSearchTerm('')} className="absolute right-3 text-neutral-500 p-0.5">
               <X size={14} />
             </button>
           )}
         </div>
 
         {/* Filter Pills */}
-        <div className="flex space-x-1.5 overflow-x-auto pb-1 scrollbar-none text-xs font-medium">
+        <div className="flex space-x-2 overflow-x-auto scrollbar-none text-xs font-semibold">
           {(['all', 'expense', 'income', 'recurring'] as const).map(type => (
             <button
               key={type}
               onClick={() => setFilterType(type)}
-              className={`px-3 py-1.5 rounded-xl capitalize transition-all shrink-0 ${
+              className={`px-3 py-1.5 rounded-xl capitalize transition shrink-0 ${
                 filterType === type
-                  ? 'bg-orange-500/10 text-orange-400 border border-orange-500/30'
-                  : 'bg-[#121214] text-neutral-400 border border-neutral-800/60 hover:text-neutral-200'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'bg-[#161618] text-neutral-400 border border-neutral-800 hover:text-white'
               }`}
             >
               {type === 'all' ? 'All Activity' : type}
@@ -99,82 +100,91 @@ const Transactions: React.FC = () => {
         </div>
       </div>
 
-      {/* Transactions List */}
+      {/* Activity Feed */}
       {filtered && filtered.length === 0 ? (
-        <div className="text-center p-12 bg-[#0a0a0a] rounded-3xl border border-neutral-900/80">
-          <p className="text-neutral-400 font-medium text-sm">No transactions found</p>
-          <p className="text-neutral-600 text-xs mt-1">Try clearing your search or add a new expense on the Overview screen.</p>
+        <div className="text-center p-12">
+          <p className="text-neutral-400 font-bold text-sm">No activity found</p>
+          <p className="text-neutral-600 text-xs mt-1">Transactions you record will appear in this feed.</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="divide-y divide-neutral-900/60">
           {Object.keys(grouped).map(dateLabel => {
             const txs = grouped[dateLabel]!;
-            const dayTotal = txs.reduce((sum, t) => sum + (t.type === 'expense' ? -t.amount : t.amount), 0);
 
             return (
-              <div key={dateLabel} className="space-y-2">
-                <div className="flex justify-between items-center px-1">
-                  <h3 className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+              <div key={dateLabel} className="pt-3">
+                <div className="px-4 py-1.5">
+                  <h3 className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
                     {dateLabel}
                   </h3>
-                  <span className={`text-xs font-bold ${dayTotal <= 0 ? 'text-neutral-400' : 'text-emerald-400'}`}>
-                    {dayTotal < 0 ? `-₹${Math.abs(dayTotal).toLocaleString('en-IN')}` : `+₹${dayTotal.toLocaleString('en-IN')}`}
-                  </span>
                 </div>
 
-                <div className="bg-[#0a0a0a] rounded-3xl border border-neutral-900/90 divide-y divide-neutral-900 overflow-hidden shadow-sm">
-                  {txs.map(tx => (
-                    <div 
-                      key={tx.id} 
-                      className="p-3.5 flex items-center justify-between hover:bg-neutral-900/40 transition group"
-                    >
-                      <div className="flex items-center space-x-3 min-w-0">
-                        <MerchantIcon name={tx.merchantName} size="md" />
-                        <div className="min-w-0">
-                          <div className="flex items-center space-x-1.5">
-                            <p className="font-semibold text-sm text-white truncate">
-                              {tx.merchantName}
-                            </p>
-                            {tx.source === 'recurring' && (
-                              <span className="p-0.5 rounded bg-orange-500/10 text-orange-400" title="Generated by recurring rule">
-                                <Repeat size={11} />
+                <div className="divide-y divide-neutral-900/40">
+                  {txs.map(tx => {
+                    const isExpense = tx.type === 'expense';
+                    const isLiked = likedTxs[tx.id];
+
+                    return (
+                      <div 
+                        key={tx.id} 
+                        className="px-4 py-3 flex items-center justify-between hover:bg-neutral-950 transition group"
+                      >
+                        <div className="flex items-center space-x-3 min-w-0">
+                          {/* Circular Brand Avatar with Story Ring */}
+                          <div className="p-[2px] rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 shrink-0">
+                            <div className="p-0.5 bg-black rounded-full">
+                              <MerchantIcon name={tx.merchantName} size="md" className="rounded-full" />
+                            </div>
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="text-xs text-neutral-300 leading-snug">
+                              <span className="font-bold text-white mr-1.5">{tx.merchantName}</span>
+                              {isExpense ? 'was debited' : 'credited income'}
+                              <span className="text-neutral-500 ml-1.5 text-[11px]">
+                                {format(new Date(tx.date), 'h:mm a')}
                               </span>
-                            )}
-                          </div>
-                          <div className="flex items-center space-x-2 text-xs text-neutral-500 mt-0.5">
-                            <span>{tx.category}</span>
-                            {tx.note && (
-                              <>
-                                <span>•</span>
-                                <span className="truncate text-neutral-400">{tx.note}</span>
-                              </>
-                            )}
+                            </p>
+
+                            <div className="flex items-center space-x-2 text-[11px] text-neutral-500 mt-0.5">
+                              <span className="px-1.5 py-0.2 rounded bg-neutral-900 border border-neutral-800 text-neutral-400">
+                                {tx.category}
+                              </span>
+                              {tx.note && <span className="truncate max-w-[120px]">{tx.note}</span>}
+                              {tx.source === 'recurring' && (
+                                <span className="text-orange-400 flex items-center space-x-0.5">
+                                  <Repeat size={10} />
+                                  <span>Recurring</span>
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center space-x-3 shrink-0">
-                        <div className="text-right">
-                          <span className={`font-bold text-sm block ${
-                            tx.type === 'expense' ? 'text-white' : 'text-emerald-400'
-                          }`}>
-                            {tx.type === 'expense' ? `-₹${tx.amount.toLocaleString('en-IN')}` : `+₹${tx.amount.toLocaleString('en-IN')}`}
+                        {/* Amount & Actions */}
+                        <div className="flex items-center space-x-2.5 shrink-0 ml-2">
+                          <span className={`font-bold text-xs ${isExpense ? 'text-white' : 'text-emerald-400'}`}>
+                            {isExpense ? `-₹${tx.amount.toLocaleString('en-IN')}` : `+₹${tx.amount.toLocaleString('en-IN')}`}
                           </span>
-                          <span className="text-[10px] text-neutral-600 block">
-                            {format(new Date(tx.date), 'h:mm a')}
-                          </span>
+
+                          <button 
+                            onClick={() => toggleLike(tx.id)}
+                            className="p-1 active:scale-125 transition"
+                          >
+                            <Heart size={15} className={isLiked ? "fill-rose-500 text-rose-500" : "text-neutral-600 hover:text-white"} />
+                          </button>
+
+                          <button 
+                            onClick={(e) => handleDelete(tx.id, e)}
+                            className="opacity-0 group-hover:opacity-100 p-1 text-neutral-600 hover:text-rose-400 transition"
+                            title="Delete"
+                          >
+                            <Trash2 size={14} />
+                          </button>
                         </div>
-
-                        <button 
-                          onClick={(e) => handleDelete(tx.id, e)}
-                          className="opacity-0 group-hover:opacity-100 focus:opacity-100 p-1.5 text-neutral-600 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition"
-                          title="Delete transaction"
-                        >
-                          <Trash2 size={15} />
-                        </button>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );
