@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { db } from '../../db/database';
 import { v4 as uuidv4 } from 'uuid';
-import { X, Sparkles } from 'lucide-react';
+import { X, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 
 const PRESET_MERCHANTS = ['Swiggy', 'Zomato', 'Blinkit', 'Zepto', 'Netflix', 'Amazon', 'Rent', 'Electricity', 'Internet', 'Gym'];
@@ -42,44 +42,55 @@ export const RecurringRuleForm: React.FC<Props> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="bg-[#0e0e10] w-full max-w-md rounded-3xl border border-neutral-800 overflow-hidden shadow-2xl animate-in slide-in-from-bottom-6 md:zoom-in-95 duration-200">
-        <div className="p-4 flex justify-between items-center border-b border-neutral-800/80 bg-neutral-900/40">
-          <div className="flex items-center space-x-2">
-            <Sparkles size={16} className="text-orange-500" />
-            <h2 className="text-sm font-bold text-white tracking-tight">New Recurring Commitment</h2>
+    <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-black/60 backdrop-blur-md p-0 md:p-4 animate-in fade-in duration-200">
+      <div className="glass-dock w-full max-w-md rounded-t-[36px] md:rounded-[36px] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-8 duration-200 border-t border-x border-white/20">
+        <div className="px-5 py-4 flex justify-between items-center border-b border-white/10">
+          <button 
+            type="button" 
+            onClick={onClose} 
+            className="w-8 h-8 rounded-full glass-card flex items-center justify-center text-zinc-400 hover:text-white transition active:scale-90"
+          >
+            <X size={16} />
+          </button>
+          <div className="flex items-center space-x-1.5">
+            <Clock size={15} className="text-amber-400" />
+            <h2 className="text-sm font-bold text-white tracking-tight">Recurring Rule</h2>
           </div>
-          <button onClick={onClose} className="p-1.5 hover:bg-neutral-800 text-neutral-400 hover:text-white rounded-full transition">
-            <X size={18} />
+          <button 
+            type="button" 
+            onClick={handleSubmit}
+            className="text-blue-400 font-semibold text-xs hover:text-blue-300 active:scale-95 transition"
+          >
+            Done
           </button>
         </div>
         
         <form onSubmit={handleSubmit} className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
           <div>
-            <label className="block text-xs font-medium text-neutral-400 mb-1">Amount (₹)</label>
-            <div className="relative flex items-center">
-              <span className="absolute left-3.5 text-neutral-500 font-bold text-lg">₹</span>
+            <label className="block text-[11px] font-semibold text-zinc-400 mb-1">AMOUNT</label>
+            <div className="glass-card-subtle rounded-2xl flex items-center px-4 py-2.5">
+              <span className="text-zinc-500 font-bold text-base mr-2">₹</span>
               <input
                 type="number"
                 step="0.01"
                 required
                 value={amount}
                 onChange={e => setAmount(e.target.value)}
-                className="w-full bg-[#161618] border border-neutral-800 rounded-2xl pl-8 pr-4 py-3 text-xl font-bold text-white placeholder-neutral-600 focus:outline-none focus:border-orange-500 transition"
+                className="w-full bg-transparent text-base font-bold text-white placeholder-zinc-600 focus:outline-none"
                 placeholder="0.00"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-neutral-400 mb-1">Merchant / Commitment Name</label>
+            <label className="block text-[11px] font-semibold text-zinc-400 mb-1">MERCHANT / EXPENSE NAME</label>
             <input
               type="text"
               required
               list="recurring_merchants"
               value={merchant}
               onChange={e => setMerchant(e.target.value)}
-              className="w-full bg-[#161618] border border-neutral-800 rounded-2xl px-4 py-2.5 text-sm text-white placeholder-neutral-600 focus:outline-none focus:border-neutral-700 transition"
+              className="w-full glass-card-subtle rounded-2xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none"
               placeholder="e.g. Swiggy, Netflix, House Rent"
             />
             <datalist id="recurring_merchants">
@@ -89,79 +100,79 @@ export const RecurringRuleForm: React.FC<Props> = ({ onClose }) => {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1">Category</label>
+              <label className="block text-[11px] font-semibold text-zinc-400 mb-1">CATEGORY</label>
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value)}
-                className="w-full bg-[#161618] border border-neutral-800 rounded-2xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-neutral-700"
+                className="w-full glass-card-subtle rounded-2xl px-3 py-2 text-xs text-white focus:outline-none"
               >
-                {PRESET_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                {PRESET_CATEGORIES.map(c => <option key={c} value={c} className="bg-zinc-900 text-white">{c}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-neutral-400 mb-1">Frequency</label>
+              <label className="block text-[11px] font-semibold text-zinc-400 mb-1">FREQUENCY</label>
               <select
                 value={frequency}
                 onChange={e => setFrequency(e.target.value as any)}
-                className="w-full bg-[#161618] border border-neutral-800 rounded-2xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-neutral-700"
+                className="w-full glass-card-subtle rounded-2xl px-3 py-2 text-xs text-white focus:outline-none"
               >
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
+                <option value="daily" className="bg-zinc-900 text-white">Daily</option>
+                <option value="weekly" className="bg-zinc-900 text-white">Weekly</option>
+                <option value="monthly" className="bg-zinc-900 text-white">Monthly</option>
               </select>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-neutral-400 mb-1">Start Date</label>
+            <label className="block text-[11px] font-semibold text-zinc-400 mb-1">START DATE</label>
             <input
               type="date"
               required
               value={startDate}
               onChange={e => setStartDate(e.target.value)}
-              className="w-full bg-[#161618] border border-neutral-800 rounded-2xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-neutral-700 [color-scheme:dark]"
+              className="w-full glass-card-subtle rounded-2xl px-4 py-2 text-xs text-white focus:outline-none [color-scheme:dark]"
             />
           </div>
 
-          <div className="pt-2 border-t border-neutral-800/80">
-            <label className="block text-xs font-medium text-neutral-400 mb-2">Behavior Mode</label>
+          <div className="pt-2 border-t border-white/[0.08]">
+            <label className="block text-[11px] font-semibold text-zinc-400 mb-2">MODE</label>
             <div className="space-y-2">
               <label className={`flex items-start space-x-3 p-3 rounded-2xl border cursor-pointer transition ${
-                mode === 'forecast' ? 'border-orange-500/50 bg-orange-500/5' : 'border-neutral-800 bg-[#161618]'
+                mode === 'forecast' ? 'bg-blue-600/20 border-blue-500/60' : 'glass-card-subtle'
               }`}>
                 <input
                   type="radio"
                   checked={mode === 'forecast'}
                   onChange={() => setMode('forecast')}
-                  className="mt-0.5 accent-orange-500"
+                  className="mt-0.5 accent-blue-500"
                 />
                 <div>
-                  <div className="font-semibold text-xs text-white">Forecast Mode (Safe)</div>
-                  <div className="text-[11px] text-neutral-400 mt-0.5">Accrues in available balance calculation, but creates no unverified transaction records.</div>
+                  <div className="font-semibold text-xs text-white">Forecast Mode</div>
+                  <div className="text-[10px] text-zinc-400 mt-0.5">Accrues in available balance, creating no unverified entries.</div>
                 </div>
               </label>
 
               <label className={`flex items-start space-x-3 p-3 rounded-2xl border cursor-pointer transition ${
-                mode === 'auto-record' ? 'border-orange-500/50 bg-orange-500/5' : 'border-neutral-800 bg-[#161618]'
+                mode === 'auto-record' ? 'bg-purple-600/20 border-purple-500/60' : 'glass-card-subtle'
               }`}>
                 <input
                   type="radio"
                   checked={mode === 'auto-record'}
                   onChange={() => setMode('auto-record')}
-                  className="mt-0.5 accent-orange-500"
+                  className="mt-0.5 accent-purple-500"
                 />
                 <div>
                   <div className="font-semibold text-xs text-white">Auto-Record Mode</div>
-                  <div className="text-[11px] text-neutral-400 mt-0.5">Generates automated transaction records when occurrences become due.</div>
+                  <div className="text-[10px] text-zinc-400 mt-0.5">Generates automated transaction records when occurrences become due.</div>
                 </div>
               </label>
             </div>
           </div>
 
-          <div className="pt-3">
+          <div className="pt-2">
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 text-white font-semibold py-3 rounded-2xl transition shadow-lg shadow-orange-600/20 active:scale-[0.99] text-sm"
+              className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:opacity-95 text-white font-semibold py-3 rounded-2xl transition shadow-lg shadow-indigo-500/25 border border-white/20 active:scale-95 text-xs"
             >
               Save Recurring Rule
             </button>

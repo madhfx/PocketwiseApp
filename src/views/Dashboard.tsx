@@ -3,31 +3,29 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import { RecurringEngine } from '../services/recurringEngine';
 import { format, startOfMonth, endOfMonth, isSameMonth, addMonths, subMonths } from 'date-fns';
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Plus, ChevronLeft, ChevronRight, CheckCircle2, TrendingUp, Sparkles, ArrowDownCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, TrendingUp, Sparkles, Wallet, ArrowDown } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { MerchantIcon } from '../components/ui/MerchantIcon';
 import { TransactionForm } from '../components/forms/TransactionForm';
 
-const STORIES_MERCHANTS = [
-  'Swiggy', 'Zomato', 'Blinkit', 'Zepto', 'Amazon', 
-  'Flipkart', 'Uber', 'Netflix', 'Spotify', 'Google Pay'
+const FEATURED_APPS = [
+  'Swiggy', 'Zomato', 'Blinkit', 'Zepto', 
+  'Amazon', 'Flipkart', 'Uber', 'Netflix'
 ];
 
 const PRESET_CATEGORIES = [
-  { label: 'Food & groceries', icon: '🍔' },
+  { label: 'Food & Dining', icon: '🍔' },
   { label: 'Shopping', icon: '🛍️' },
-  { label: 'Travel & transport', icon: '🚕' },
+  { label: 'Transport', icon: '🚕' },
   { label: 'Subscriptions', icon: '🎬' },
   { label: 'Other', icon: '💳' }
 ];
 
-const COLORS = ['#f97316', '#eab308', '#ec4899'];
+const COLORS = ['#FF9500', '#FFCC00', '#FF3B30']; // Apple system orange, yellow, red
 
 const Dashboard: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 9, 10)); // October 2026 demo
-  const [selectedStoryMerchant, setSelectedStoryMerchant] = useState<string | null>(null);
-  const [isLiked, setIsLiked] = useState(true);
-  const [isSaved, setIsSaved] = useState(false);
+  const [selectedMerchantModal, setSelectedMerchantModal] = useState<string | null>(null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
   const monthStart = startOfMonth(currentDate);
@@ -80,10 +78,10 @@ const Dashboard: React.FC = () => {
     
   const maxMerchantAmount = topMerchants.length > 0 ? topMerchants[0].amount : 1;
 
-  // Quick Add State inside Feed
+  // Quick Add State
   const [amount, setAmount] = useState('');
   const [merchant, setMerchant] = useState('Swiggy');
-  const [category, setCategory] = useState('Food & groceries');
+  const [category, setCategory] = useState('Food & Dining');
   const [note, setNote] = useState('');
 
   const handleQuickAdd = async (e: React.FormEvent) => {
@@ -110,243 +108,164 @@ const Dashboard: React.FC = () => {
 
     setTimeout(() => {
       setSuccessToast(null);
-    }, 3000);
+    }, 2800);
   };
 
   return (
-    <div className="font-sans pb-16 bg-black min-h-screen text-white">
+    <div className="space-y-6 font-sans">
       {/* Toast Alert */}
       {successToast && (
-        <div className="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-neutral-900/95 text-white border border-neutral-800 px-4 py-2 rounded-full shadow-2xl flex items-center space-x-2 text-xs font-semibold animate-in fade-in duration-150">
-          <CheckCircle2 size={16} className="text-rose-500" />
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 glass-dock px-4 py-2 rounded-full shadow-2xl flex items-center space-x-2 text-xs font-semibold animate-in fade-in duration-200">
+          <CheckCircle2 size={16} className="text-emerald-400" />
           <span>{successToast}</span>
         </div>
       )}
 
-      {/* Instagram Header */}
-      <header className="sticky top-0 z-40 bg-black/90 backdrop-blur-xl border-b border-neutral-900/80 px-4 py-2.5 flex items-center justify-between">
-        <h1 className="text-2xl font-bold tracking-tight bg-gradient-to-r from-amber-400 via-rose-500 to-purple-500 bg-clip-text text-transparent font-serif italic">
-          Pocketwise
-        </h1>
-
+      {/* iOS Floating Glass Header */}
+      <header className="flex justify-between items-center pt-1">
         <div className="flex items-center space-x-2">
-          {/* Month Switcher Pill */}
-          <div className="flex items-center space-x-0.5 bg-[#121214] border border-neutral-800/80 rounded-full px-2 py-1">
-            <button 
-              onClick={() => setCurrentDate(subMonths(currentDate, 1))}
-              className="p-0.5 text-neutral-400 hover:text-white transition"
-              aria-label="Previous month"
-            >
-              <ChevronLeft size={15} />
-            </button>
-            <span className="text-[11px] font-semibold text-neutral-200 px-1.5 tracking-tight">
-              {format(currentDate, 'MMM yyyy')}
-            </span>
-            <button 
-              onClick={() => setCurrentDate(addMonths(currentDate, 1))}
-              className="p-0.5 text-neutral-400 hover:text-white transition"
-              aria-label="Next month"
-            >
-              <ChevronRight size={15} />
-            </button>
+          <div className="w-8 h-8 rounded-full glass-pill flex items-center justify-center text-xs shadow-inner">
+            <Wallet size={15} className="text-blue-400" />
           </div>
+          <div>
+            <h1 className="text-lg font-bold tracking-tight text-white flex items-center space-x-1.5">
+              <span>Pocketwise</span>
+            </h1>
+          </div>
+        </div>
 
+        {/* Dynamic Island Style Month Pill */}
+        <div className="glass-pill rounded-full px-2 py-1 flex items-center space-x-1 shadow-sm">
           <button 
-            onClick={() => setIsLiked(!isLiked)} 
-            className="p-1 text-white hover:text-rose-500 transition"
+            onClick={() => setCurrentDate(subMonths(currentDate, 1))}
+            className="p-1 hover:bg-white/10 text-white/70 hover:text-white rounded-full transition active:scale-90"
+            aria-label="Previous month"
           >
-            <Heart size={22} className={isLiked ? "fill-rose-500 text-rose-500" : ""} />
+            <ChevronLeft size={14} />
+          </button>
+          <span className="text-xs font-semibold text-white px-1 tracking-tight min-w-[76px] text-center">
+            {format(currentDate, 'MMM yyyy')}
+          </span>
+          <button 
+            onClick={() => setCurrentDate(addMonths(currentDate, 1))}
+            className="p-1 hover:bg-white/10 text-white/70 hover:text-white rounded-full transition active:scale-90"
+            aria-label="Next month"
+          >
+            <ChevronRight size={14} />
           </button>
         </div>
       </header>
 
-      {/* Instagram Stories Bar: Brand Icons with Gradient Rings! */}
-      <div className="py-3 border-b border-neutral-900/80 overflow-x-auto scrollbar-none">
-        <div className="flex space-x-3.5 px-4 items-center">
-          {/* Your Story (+) */}
-          <div 
-            onClick={() => setSelectedStoryMerchant('Swiggy')}
-            className="flex flex-col items-center space-y-1.5 cursor-pointer shrink-0"
-          >
-            <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center text-white text-xs font-bold">
-                <span className="text-xl">💰</span>
-              </div>
-              <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-blue-500 border-2 border-black flex items-center justify-center text-white">
-                <Plus size={13} strokeWidth={3} />
-              </div>
-            </div>
-            <span className="text-[11px] text-neutral-400 font-medium">Quick Add</span>
+      {/* iOS Hero Widget: Frosted Liquid Glass Card */}
+      <div className="glass-card rounded-[32px] p-6 relative overflow-hidden transition-all duration-300">
+        <div className="flex justify-between items-start mb-1">
+          <span className="text-[11px] font-semibold tracking-wider uppercase text-zinc-400">
+            {format(currentDate, 'MMMM')} Spending
+          </span>
+          {totalIncome > 0 && (
+            <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 shadow-sm">
+              {savingsRate}% saved
+            </span>
+          )}
+        </div>
+
+        {/* Big Display Amount */}
+        <div className="text-4xl md:text-5xl font-extrabold tracking-tight text-white my-3 flex items-baseline space-x-1">
+          <span className="text-2xl md:text-3xl font-bold text-white/60">₹</span>
+          <span>{totalSpent.toLocaleString('en-IN')}</span>
+        </div>
+
+        {/* Frosted Micro-cards Row */}
+        <div className="grid grid-cols-3 gap-2 pt-4 border-t border-white/10">
+          <div className="glass-card-subtle p-3 rounded-2xl">
+            <span className="text-[10px] text-zinc-400 font-medium block">Remaining</span>
+            <span className={`text-sm font-bold block mt-0.5 ${availableBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+              ₹{availableBalance.toLocaleString('en-IN')}
+            </span>
           </div>
 
-          {/* Brand Icons Stories */}
-          {STORIES_MERCHANTS.map((brand) => (
-            <div
-              key={brand}
+          <div className="glass-card-subtle p-3 rounded-2xl">
+            <span className="text-[10px] text-zinc-400 font-medium block">Income</span>
+            <span className="text-sm font-bold text-blue-400 block mt-0.5">
+              ₹{totalIncome.toLocaleString('en-IN')}
+            </span>
+          </div>
+
+          <div className="glass-card-subtle p-3 rounded-2xl">
+            <span className="text-[10px] text-zinc-400 font-medium block">Accrued Rec.</span>
+            <span className="text-sm font-bold text-amber-400 block mt-0.5">
+              ₹{accruedRecurring.toLocaleString('en-IN')}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Apple App Squircles Grid (Brand Icons Library) */}
+      <div className="glass-card rounded-[28px] p-5 space-y-3">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xs font-bold text-white uppercase tracking-wider flex items-center space-x-1.5">
+            <span>Fast Expense Launcher</span>
+            <Sparkles size={13} className="text-blue-400" />
+          </h2>
+          <span className="text-[11px] text-zinc-400">Tap to log</span>
+        </div>
+
+        <div className="grid grid-cols-4 gap-3 pt-1">
+          {FEATURED_APPS.map(appName => (
+            <button
+              key={appName}
               onClick={() => {
-                setSelectedStoryMerchant(brand);
-                setMerchant(brand);
+                setSelectedMerchantModal(appName);
+                setMerchant(appName);
               }}
-              className="flex flex-col items-center space-y-1.5 cursor-pointer shrink-0 group active:scale-95 transition"
+              className="flex flex-col items-center space-y-1.5 group active:scale-90 transition-transform"
             >
-              {/* Instagram Gradient Ring */}
-              <div className="p-[2.5px] rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 shadow-sm group-hover:brightness-110 transition">
-                <div className="p-[2px] bg-black rounded-full">
-                  <div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center bg-white">
-                    <MerchantIcon name={brand} size="lg" className="w-full h-full object-cover" />
-                  </div>
-                </div>
+              <div className="relative p-0.5 rounded-[18px] bg-gradient-to-b from-white/20 to-white/5 border border-white/15 shadow-md shadow-black/50 group-hover:brightness-110 transition">
+                <MerchantIcon name={appName} size="lg" className="rounded-[16px]" />
               </div>
-              <span className="text-[11px] text-neutral-300 font-medium truncate max-w-[62px] text-center">
-                {brand}
+              <span className="text-[11px] font-medium text-zinc-300 group-hover:text-white truncate max-w-[64px] text-center">
+                {appName}
               </span>
-            </div>
+            </button>
           ))}
         </div>
       </div>
 
-      {/* FEED POST 1: Monthly Financial Summary */}
-      <article className="border-b border-neutral-900/90 pb-3">
-        {/* Post Header */}
-        <div className="flex justify-between items-center px-4 py-3">
-          <div className="flex items-center space-x-2.5">
-            <div className="p-[1.5px] rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600">
-              <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-xs">
-                🏦
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center space-x-1.5">
-                <span className="font-bold text-xs text-white">pocketwise.finance</span>
-                <span className="text-blue-400 text-[11px]">✓</span>
-              </div>
-              <span className="text-[10px] text-neutral-400">
-                {format(currentDate, 'MMMM yyyy')} • Official Ledger
-              </span>
-            </div>
-          </div>
-          <button className="text-neutral-400 hover:text-white">
-            <MoreHorizontal size={18} />
-          </button>
+      {/* Screen Time Style: "Where your money goes" */}
+      <div className="glass-card rounded-[28px] p-5 space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xs font-bold text-white uppercase tracking-wider flex items-center space-x-1.5">
+            <TrendingUp size={13} className="text-orange-400" />
+            <span>Top App Expenditures</span>
+          </h2>
+          <span className="text-[11px] text-zinc-400">Monthly Ranking</span>
         </div>
 
-        {/* Post Media: Spending Hero Card */}
-        <div className="mx-3 rounded-3xl bg-gradient-to-b from-[#16161a] to-[#0c0c0e] border border-neutral-800/80 p-6 shadow-2xl relative overflow-hidden">
-          <div className="flex justify-between items-start mb-2">
-            <span className="text-[11px] font-semibold tracking-wider uppercase text-neutral-400">
-              TOTAL MONTHLY SPENDING
-            </span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20">
-              {savingsRate}% Saved
-            </span>
-          </div>
-
-          <div className="text-4xl font-extrabold tracking-tight text-white mb-5">
-            ₹{totalSpent.toLocaleString('en-IN')}
-          </div>
-
-          {/* Breakdown Stats */}
-          <div className="grid grid-cols-3 gap-2 pt-4 border-t border-neutral-800/80">
-            <div className="bg-black/50 p-2.5 rounded-2xl border border-neutral-800/60">
-              <span className="text-[10px] text-neutral-400 block">Available</span>
-              <span className={`text-sm font-bold block mt-0.5 ${availableBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                ₹{availableBalance.toLocaleString('en-IN')}
-              </span>
-            </div>
-
-            <div className="bg-black/50 p-2.5 rounded-2xl border border-neutral-800/60">
-              <span className="text-[10px] text-neutral-400 block">Income</span>
-              <span className="text-sm font-bold text-neutral-200 block mt-0.5">
-                ₹{totalIncome.toLocaleString('en-IN')}
-              </span>
-            </div>
-
-            <div className="bg-black/50 p-2.5 rounded-2xl border border-neutral-800/60">
-              <span className="text-[10px] text-neutral-400 block">Accrued Rec.</span>
-              <span className="text-sm font-bold text-orange-400 block mt-0.5">
-                ₹{accruedRecurring.toLocaleString('en-IN')}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Post Actions (Like, Comment, Share, Bookmark) */}
-        <div className="flex justify-between items-center px-4 pt-3 pb-1">
-          <div className="flex items-center space-x-4">
-            <button onClick={() => setIsLiked(!isLiked)} className="active:scale-125 transition">
-              <Heart size={23} className={isLiked ? "fill-rose-500 text-rose-500" : "text-white"} />
-            </button>
-            <button className="text-white hover:text-neutral-300">
-              <MessageCircle size={23} />
-            </button>
-            <button className="text-white hover:text-neutral-300">
-              <Send size={23} />
-            </button>
-          </div>
-          <button onClick={() => setIsSaved(!isSaved)}>
-            <Bookmark size={23} className={isSaved ? "fill-white text-white" : "text-white"} />
-          </button>
-        </div>
-
-        {/* Post Captions & Engagement */}
-        <div className="px-4 text-xs space-y-1">
-          <p className="font-bold text-white">
-            Liked by <span className="font-semibold text-neutral-200">swiggy_lover</span> and <span className="font-semibold text-neutral-200">others</span>
-          </p>
-          <p className="text-neutral-300 leading-snug">
-            <span className="font-bold text-white mr-1.5">pocketwise.finance</span>
-            Budget tracking for {format(currentDate, 'MMMM yyyy')}. Actual spending stands at ₹{actualExpenses.toLocaleString('en-IN')} with ₹{accruedRecurring.toLocaleString('en-IN')} in scheduled commitments.
-          </p>
-          <p className="text-[10px] text-neutral-500 uppercase mt-1">2 HOURS AGO</p>
-        </div>
-      </article>
-
-      {/* FEED POST 2: Top Merchants Highlights Carousel */}
-      <article className="border-b border-neutral-900/90 pb-4">
-        {/* Post Header */}
-        <div className="flex justify-between items-center px-4 py-3">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-full bg-neutral-900 border border-neutral-800 flex items-center justify-center">
-              <TrendingUp size={16} className="text-orange-500" />
-            </div>
-            <div>
-              <span className="font-bold text-xs text-white block">top_merchants_breakdown</span>
-              <span className="text-[10px] text-neutral-400">Where Your Money Goes</span>
-            </div>
-          </div>
-          <button className="text-neutral-400">
-            <MoreHorizontal size={18} />
-          </button>
-        </div>
-
-        {/* Media: Top Merchants with Brand Logos */}
-        <div className="mx-3 rounded-3xl bg-[#0e0e10] border border-neutral-800 p-4 space-y-4">
-          {topMerchants.length === 0 ? (
-            <p className="text-xs text-neutral-500 text-center py-4">No transactions recorded yet this month.</p>
-          ) : (
-            topMerchants.map((item, idx) => {
+        {topMerchants.length === 0 ? (
+          <p className="text-xs text-zinc-500 text-center py-4">No expenses recorded for this month.</p>
+        ) : (
+          <div className="space-y-4">
+            {topMerchants.map((item, idx) => {
               const percentage = totalSpent > 0 ? Math.round((item.amount / totalSpent) * 100) : 0;
               return (
                 <div key={item.name} className="space-y-1.5">
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-3">
-                      <div className="p-[2px] rounded-xl bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600">
-                        <div className="bg-black p-0.5 rounded-[10px]">
-                          <MerchantIcon name={item.name} size="md" />
-                        </div>
+                      <div className="p-0.5 rounded-[12px] bg-white/10 border border-white/15 shadow-sm">
+                        <MerchantIcon name={item.name} size="sm" className="rounded-[10px]" />
                       </div>
                       <div>
                         <span className="font-bold text-xs text-white block">{item.name}</span>
-                        <span className="text-[11px] text-neutral-400">{percentage}% of your total spending</span>
+                        <span className="text-[10px] text-zinc-400">{percentage}% of all expenses</span>
                       </div>
                     </div>
                     <span className="font-bold text-sm text-white">₹{item.amount.toLocaleString('en-IN')}</span>
                   </div>
 
-                  {/* Progress Bar */}
-                  <div className="h-1.5 w-full bg-[#18181a] rounded-full overflow-hidden ml-11" style={{ width: 'calc(100% - 44px)' }}>
+                  {/* Frosted Glass Progress Bar */}
+                  <div className="h-2 w-full bg-white/[0.06] rounded-full overflow-hidden p-0.5 border border-white/5">
                     <div 
-                      className="h-full rounded-full transition-all duration-500"
+                      className="h-full rounded-full transition-all duration-500 shadow-sm"
                       style={{ 
                         width: `${(item.amount / maxMerchantAmount) * 100}%`,
                         backgroundColor: COLORS[idx % COLORS.length]
@@ -355,124 +274,85 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
               );
-            })
-          )}
-        </div>
-
-        <div className="px-4 pt-3 text-xs">
-          <p className="font-bold text-white mb-0.5">Top Spending Insights</p>
-          <p className="text-neutral-400 text-[11px]">Ranked by total actual spend recorded in {format(currentDate, 'MMMM yyyy')}.</p>
-        </div>
-      </article>
-
-      {/* FEED POST 3: Quick Add Expense "Create Post" Card */}
-      <article className="px-3 pt-3">
-        <div className="rounded-3xl bg-[#0f0f12] border border-neutral-800 p-5 space-y-4 shadow-xl">
-          <div className="flex items-center space-x-2">
-            <Sparkles size={16} className="text-rose-500" />
-            <h2 className="text-sm font-bold text-white">Quick Log Expense</h2>
+            })}
           </div>
+        )}
+      </div>
 
-          <form onSubmit={handleQuickAdd} className="space-y-4">
-            <div>
-              <label className="block text-[11px] text-neutral-400 font-semibold mb-1">AMOUNT (₹)</label>
-              <div className="relative flex items-center">
-                <span className="absolute left-3.5 text-neutral-500 font-bold">₹</span>
-                <input
-                  type="number"
-                  step="any"
-                  required
-                  value={amount}
-                  onChange={e => setAmount(e.target.value)}
-                  className="w-full bg-[#18181c] border border-neutral-800 rounded-2xl pl-8 pr-4 py-2.5 text-sm font-bold text-white placeholder-neutral-600 focus:outline-none focus:border-rose-500 transition"
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
+      {/* iOS Control Center Style: Quick Add Expense */}
+      <div className="glass-card rounded-[28px] p-5 space-y-4">
+        <h2 className="text-xs font-bold text-white uppercase tracking-wider">
+          Quick Expense Entry
+        </h2>
 
-            {/* Merchant Grid with Logos */}
-            <div>
-              <label className="block text-[11px] text-neutral-400 font-semibold mb-2">MERCHANT / BRAND</label>
-              <div className="grid grid-cols-3 gap-2">
-                {STORIES_MERCHANTS.map(m => {
-                  const isSelected = merchant === m;
-                  return (
-                    <button
-                      key={m}
-                      type="button"
-                      onClick={() => setMerchant(m)}
-                      className={`p-2 rounded-xl border flex items-center space-x-2 text-xs font-semibold transition ${
-                        isSelected
-                          ? 'border-rose-500 bg-rose-500/10 text-white shadow-sm ring-1 ring-rose-500/30'
-                          : 'border-neutral-800/80 bg-[#16161a] text-neutral-400 hover:bg-[#1e1e24]'
-                      }`}
-                    >
-                      <MerchantIcon name={m} size="xs" />
-                      <span className="truncate">{m}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Category Selector */}
-            <div>
-              <label className="block text-[11px] text-neutral-400 font-semibold mb-2">CATEGORY</label>
-              <div className="space-y-1.5">
-                {PRESET_CATEGORIES.map(c => {
-                  const isSelected = category === c.label;
-                  return (
-                    <div
-                      key={c.label}
-                      onClick={() => setCategory(c.label)}
-                      className={`flex items-center justify-between p-2 rounded-xl border cursor-pointer transition ${
-                        isSelected 
-                          ? 'bg-neutral-800/80 border-neutral-700 text-white' 
-                          : 'bg-[#141418] border-neutral-800/50 text-neutral-400 hover:text-white'
-                      }`}
-                    >
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs">{c.icon}</span>
-                        <span className="text-xs font-medium">{c.label}</span>
-                      </div>
-                      <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${
-                        isSelected ? 'border-rose-500' : 'border-neutral-700'
-                      }`}>
-                        {isSelected && <div className="w-1.5 h-1.5 bg-rose-500 rounded-full" />}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Note */}
-            <div>
+        <form onSubmit={handleQuickAdd} className="space-y-4">
+          <div>
+            <label className="block text-[11px] font-semibold text-zinc-400 mb-1">AMOUNT</label>
+            <div className="glass-card-subtle rounded-2xl flex items-center px-4 py-2.5 focus-within:border-blue-500/80 transition">
+              <span className="text-zinc-500 font-bold text-base mr-2">₹</span>
               <input
-                type="text"
-                value={note}
-                onChange={e => setNote(e.target.value)}
-                placeholder="Write a caption / note..."
-                className="w-full bg-[#18181c] border border-neutral-800 rounded-2xl px-3.5 py-2 text-xs text-white placeholder-neutral-600 focus:outline-none"
+                type="number"
+                step="any"
+                required
+                value={amount}
+                onChange={e => setAmount(e.target.value)}
+                className="w-full bg-transparent text-base font-bold text-white placeholder-zinc-600 focus:outline-none"
+                placeholder="0.00"
               />
             </div>
+          </div>
 
-            <button
-              type="submit"
-              className="w-full bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white font-semibold py-3 rounded-2xl transition shadow-lg text-sm active:scale-[0.99] flex items-center justify-center space-x-2"
-            >
-              <span>Share Expense</span>
-              <ArrowDownCircle size={16} />
-            </button>
-          </form>
-        </div>
-      </article>
+          {/* Preset Category Chips */}
+          <div>
+            <label className="block text-[11px] font-semibold text-zinc-400 mb-2">CATEGORY</label>
+            <div className="flex flex-wrap gap-1.5">
+              {PRESET_CATEGORIES.map(c => {
+                const isSelected = category === c.label;
+                return (
+                  <button
+                    key={c.label}
+                    type="button"
+                    onClick={() => setCategory(c.label)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-medium transition active:scale-95 flex items-center space-x-1.5 ${
+                      isSelected
+                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25 border border-white/20'
+                        : 'glass-card-subtle text-zinc-400 hover:text-white'
+                    }`}
+                  >
+                    <span>{c.icon}</span>
+                    <span>{c.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
-      {/* Quick Add from Story Click Modal */}
-      {selectedStoryMerchant && (
+          {/* Note Input */}
+          <div>
+            <input
+              type="text"
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              placeholder="Note (optional)..."
+              className="w-full glass-card-subtle rounded-2xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white/20"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:opacity-95 text-white font-semibold py-3 rounded-2xl text-xs shadow-lg shadow-indigo-500/25 border border-white/20 active:scale-95 transition flex items-center justify-center space-x-2"
+          >
+            <span>Confirm Expense</span>
+            <ArrowDown size={14} />
+          </button>
+        </form>
+      </div>
+
+      {/* Quick Add Modal from App Squircle tap */}
+      {selectedMerchantModal && (
         <TransactionForm
-          defaultMerchant={selectedStoryMerchant}
-          onClose={() => setSelectedStoryMerchant(null)}
+          defaultMerchant={selectedMerchantModal}
+          onClose={() => setSelectedMerchantModal(null)}
         />
       )}
     </div>

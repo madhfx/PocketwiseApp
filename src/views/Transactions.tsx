@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import { format, isToday, isYesterday } from 'date-fns';
-import { Trash2, Search, X, Repeat, Heart } from 'lucide-react';
+import { Trash2, Search, X, Repeat, Receipt } from 'lucide-react';
 import { MerchantIcon } from '../components/ui/MerchantIcon';
 
 const Transactions: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'expense' | 'income' | 'recurring'>('all');
-  const [likedTxs, setLikedTxs] = useState<Record<string, boolean>>({});
   
   const transactions = useLiveQuery(async () => {
     const list = await db.transactions.toArray();
@@ -20,10 +19,6 @@ const Transactions: React.FC = () => {
     if (confirm('Delete this transaction?')) {
       await db.transactions.delete(id);
     }
-  };
-
-  const toggleLike = (id: string) => {
-    setLikedTxs(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   const filtered = transactions?.filter(t => {
@@ -53,45 +48,49 @@ const Transactions: React.FC = () => {
   });
 
   return (
-    <div className="font-sans pb-16 bg-black min-h-screen text-white">
-      {/* Instagram Header */}
-      <header className="sticky top-0 z-40 bg-black/90 backdrop-blur-xl border-b border-neutral-900/80 px-4 py-3 flex items-center justify-between">
-        <h1 className="text-xl font-bold tracking-tight text-white flex items-center space-x-2">
-          <span>Activity</span>
-        </h1>
-        <span className="text-xs text-neutral-500 font-semibold">
+    <div className="space-y-6 font-sans">
+      {/* iOS Header */}
+      <header className="flex justify-between items-center pt-1">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 rounded-full glass-pill flex items-center justify-center text-xs">
+            <Receipt size={15} className="text-purple-400" />
+          </div>
+          <h1 className="text-lg font-bold tracking-tight text-white">Activity</h1>
+        </div>
+        <span className="text-xs text-zinc-400 font-medium glass-pill px-2.5 py-1 rounded-full">
           {filtered?.length || 0} entries
         </span>
       </header>
 
-      {/* Search Bar & Filters */}
-      <div className="p-4 space-y-3 border-b border-neutral-900/80">
-        <div className="relative flex items-center">
-          <Search size={16} className="absolute left-3.5 text-neutral-500" />
+      {/* Glass Search & Filter Controls */}
+      <div className="space-y-3">
+        {/* Search Bar */}
+        <div className="glass-card-subtle rounded-2xl flex items-center px-3.5 py-2 focus-within:border-white/25 transition">
+          <Search size={15} className="text-zinc-400 mr-2 shrink-0" />
           <input
             type="text"
-            placeholder="Search brands, categories..."
+            placeholder="Search merchants, notes, categories..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full bg-[#141416] border border-neutral-800 rounded-2xl pl-10 pr-9 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-neutral-700"
+            className="w-full bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none"
           />
           {searchTerm && (
-            <button onClick={() => setSearchTerm('')} className="absolute right-3 text-neutral-500 p-0.5">
+            <button onClick={() => setSearchTerm('')} className="text-zinc-400 hover:text-white p-0.5">
               <X size={14} />
             </button>
           )}
         </div>
 
         {/* Filter Pills */}
-        <div className="flex space-x-2 overflow-x-auto scrollbar-none text-xs font-semibold">
+        <div className="flex space-x-1.5 overflow-x-auto scrollbar-none text-xs font-medium">
           {(['all', 'expense', 'income', 'recurring'] as const).map(type => (
             <button
               key={type}
               onClick={() => setFilterType(type)}
-              className={`px-3 py-1.5 rounded-xl capitalize transition shrink-0 ${
+              className={`px-3 py-1.5 rounded-xl capitalize transition-all shrink-0 active:scale-95 ${
                 filterType === type
-                  ? 'bg-white text-black shadow-sm'
-                  : 'bg-[#161618] text-neutral-400 border border-neutral-800 hover:text-white'
+                  ? 'bg-white/20 text-white border border-white/20 shadow-sm font-semibold'
+                  : 'glass-card-subtle text-zinc-400 hover:text-white'
               }`}
             >
               {type === 'all' ? 'All Activity' : type}
@@ -100,84 +99,81 @@ const Transactions: React.FC = () => {
         </div>
       </div>
 
-      {/* Activity Feed */}
+      {/* Apple Wallet Style Grouped Cards */}
       {filtered && filtered.length === 0 ? (
-        <div className="text-center p-12">
-          <p className="text-neutral-400 font-bold text-sm">No activity found</p>
-          <p className="text-neutral-600 text-xs mt-1">Transactions you record will appear in this feed.</p>
+        <div className="glass-card rounded-[28px] p-10 text-center">
+          <p className="text-zinc-300 font-semibold text-sm">No transactions found</p>
+          <p className="text-zinc-500 text-xs mt-1">Transactions you add will appear in this timeline.</p>
         </div>
       ) : (
-        <div className="divide-y divide-neutral-900/60">
+        <div className="space-y-5">
           {Object.keys(grouped).map(dateLabel => {
             const txs = grouped[dateLabel]!;
+            const dayTotal = txs.reduce((sum, t) => sum + (t.type === 'expense' ? -t.amount : t.amount), 0);
 
             return (
-              <div key={dateLabel} className="pt-3">
-                <div className="px-4 py-1.5">
-                  <h3 className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
+              <div key={dateLabel} className="space-y-2">
+                <div className="flex justify-between items-center px-2">
+                  <h3 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                     {dateLabel}
                   </h3>
+                  <span className={`text-xs font-bold ${dayTotal <= 0 ? 'text-zinc-400' : 'text-emerald-400'}`}>
+                    {dayTotal < 0 ? `-₹${Math.abs(dayTotal).toLocaleString('en-IN')}` : `+₹${dayTotal.toLocaleString('en-IN')}`}
+                  </span>
                 </div>
 
-                <div className="divide-y divide-neutral-900/40">
+                <div className="glass-card rounded-[28px] divide-y divide-white/[0.06] overflow-hidden">
                   {txs.map(tx => {
                     const isExpense = tx.type === 'expense';
-                    const isLiked = likedTxs[tx.id];
 
                     return (
                       <div 
                         key={tx.id} 
-                        className="px-4 py-3 flex items-center justify-between hover:bg-neutral-950 transition group"
+                        className="p-3.5 flex items-center justify-between hover:bg-white/[0.04] transition group"
                       >
                         <div className="flex items-center space-x-3 min-w-0">
-                          {/* Circular Brand Avatar with Story Ring */}
-                          <div className="p-[2px] rounded-full bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 shrink-0">
-                            <div className="p-0.5 bg-black rounded-full">
-                              <MerchantIcon name={tx.merchantName} size="md" className="rounded-full" />
-                            </div>
+                          <div className="p-0.5 rounded-[14px] bg-gradient-to-b from-white/15 to-white/5 border border-white/10 shadow-sm">
+                            <MerchantIcon name={tx.merchantName} size="md" className="rounded-[12px]" />
                           </div>
 
                           <div className="min-w-0">
-                            <p className="text-xs text-neutral-300 leading-snug">
-                              <span className="font-bold text-white mr-1.5">{tx.merchantName}</span>
-                              {isExpense ? 'was debited' : 'credited income'}
-                              <span className="text-neutral-500 ml-1.5 text-[11px]">
-                                {format(new Date(tx.date), 'h:mm a')}
-                              </span>
-                            </p>
-
-                            <div className="flex items-center space-x-2 text-[11px] text-neutral-500 mt-0.5">
-                              <span className="px-1.5 py-0.2 rounded bg-neutral-900 border border-neutral-800 text-neutral-400">
-                                {tx.category}
-                              </span>
-                              {tx.note && <span className="truncate max-w-[120px]">{tx.note}</span>}
+                            <div className="flex items-center space-x-1.5">
+                              <p className="font-semibold text-xs text-white truncate">
+                                {tx.merchantName}
+                              </p>
                               {tx.source === 'recurring' && (
-                                <span className="text-orange-400 flex items-center space-x-0.5">
+                                <span className="p-0.5 rounded bg-blue-500/15 text-blue-400" title="Recurring">
                                   <Repeat size={10} />
-                                  <span>Recurring</span>
                                 </span>
+                              )}
+                            </div>
+                            <div className="flex items-center space-x-2 text-[11px] text-zinc-400 mt-0.5">
+                              <span>{tx.category}</span>
+                              {tx.note && (
+                                <>
+                                  <span>•</span>
+                                  <span className="truncate max-w-[120px] text-zinc-300">{tx.note}</span>
+                                </>
                               )}
                             </div>
                           </div>
                         </div>
 
-                        {/* Amount & Actions */}
-                        <div className="flex items-center space-x-2.5 shrink-0 ml-2">
-                          <span className={`font-bold text-xs ${isExpense ? 'text-white' : 'text-emerald-400'}`}>
-                            {isExpense ? `-₹${tx.amount.toLocaleString('en-IN')}` : `+₹${tx.amount.toLocaleString('en-IN')}`}
-                          </span>
-
-                          <button 
-                            onClick={() => toggleLike(tx.id)}
-                            className="p-1 active:scale-125 transition"
-                          >
-                            <Heart size={15} className={isLiked ? "fill-rose-500 text-rose-500" : "text-neutral-600 hover:text-white"} />
-                          </button>
+                        {/* Amount & Time */}
+                        <div className="flex items-center space-x-3 shrink-0">
+                          <div className="text-right">
+                            <span className={`font-bold text-xs block ${isExpense ? 'text-white' : 'text-emerald-400'}`}>
+                              {isExpense ? `-₹${tx.amount.toLocaleString('en-IN')}` : `+₹${tx.amount.toLocaleString('en-IN')}`}
+                            </span>
+                            <span className="text-[10px] text-zinc-500 block">
+                              {format(new Date(tx.date), 'h:mm a')}
+                            </span>
+                          </div>
 
                           <button 
                             onClick={(e) => handleDelete(tx.id, e)}
-                            className="opacity-0 group-hover:opacity-100 p-1 text-neutral-600 hover:text-rose-400 transition"
-                            title="Delete"
+                            className="opacity-0 group-hover:opacity-100 p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition"
+                            title="Delete transaction"
                           >
                             <Trash2 size={14} />
                           </button>
