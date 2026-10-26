@@ -49,33 +49,34 @@ export const TransactionForm: React.FC<Props> = ({ onClose, defaultMerchant }) =
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-black/60 backdrop-blur-md p-0 md:p-4 animate-in fade-in duration-200">
-      <div className="glass-dock w-full max-w-md rounded-t-[36px] md:rounded-[36px] overflow-hidden shadow-2xl animate-in slide-in-from-bottom-8 duration-200 border-t border-x border-white/20">
-        {/* iOS Glass Modal Header */}
-        <div className="px-5 py-4 flex justify-between items-center border-b border-white/10">
+    <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center bg-slate-900/40 backdrop-blur-sm p-0 md:p-4 animate-in fade-in duration-200">
+      <div className="bg-white w-full max-w-md rounded-t-3xl md:rounded-3xl overflow-hidden shadow-2xl animate-in slide-in-from-bottom-8 duration-200 border border-slate-200">
+        {/* Modal Header */}
+        <div className="px-6 py-4 flex justify-between items-center border-b border-slate-100">
           <button 
             type="button" 
             onClick={onClose} 
-            className="w-8 h-8 rounded-full glass-card flex items-center justify-center text-zinc-400 hover:text-white transition active:scale-90"
+            className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:text-slate-800 transition active:scale-90"
+            aria-label="Close modal"
           >
             <X size={16} />
           </button>
-          <h2 className="text-sm font-bold text-white tracking-tight">New Transaction</h2>
+          <h2 className="text-sm font-bold text-slate-900 tracking-tight">Record Transaction</h2>
           <button 
             type="button"
             onClick={handleSubmit}
-            className="text-blue-400 font-semibold text-xs hover:text-blue-300 active:scale-95 transition"
+            className="text-indigo-600 font-bold text-xs hover:text-indigo-700 active:scale-95 transition"
           >
-            Done
+            Save
           </button>
         </div>
         
-        <form onSubmit={handleSubmit} className="p-5 space-y-4 max-h-[80vh] overflow-y-auto">
-          {/* iOS Big Amount Display */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+          {/* Big Amount Display */}
           <div className="text-center py-2">
-            <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-semibold block mb-1">AMOUNT</span>
+            <span className="text-[10px] text-slate-400 uppercase tracking-widest font-bold block mb-1">AMOUNT</span>
             <div className="flex items-center justify-center space-x-1">
-              <span className="text-3xl font-bold text-white/50">₹</span>
+              <span className="text-3xl font-extrabold text-slate-400">₹</span>
               <input
                 type="number"
                 step="any"
@@ -83,39 +84,39 @@ export const TransactionForm: React.FC<Props> = ({ onClose, defaultMerchant }) =
                 autoFocus
                 value={amount}
                 onChange={e => setAmount(e.target.value)}
-                className="w-48 bg-transparent text-center text-4xl font-extrabold text-white placeholder-zinc-700 focus:outline-none"
+                className="w-48 bg-transparent text-center text-4xl font-extrabold text-slate-900 placeholder-slate-300 focus:outline-none"
                 placeholder="0"
               />
             </div>
           </div>
 
-          {/* iOS Segmented Pill Switcher */}
-          <div className="flex glass-card-subtle p-1 rounded-2xl">
+          {/* Segmented Type Switcher */}
+          <div className="flex bg-slate-100 p-1 rounded-xl">
             <button
               type="button"
               onClick={() => setType('expense')}
-              className={`flex-1 py-1.5 text-xs font-semibold rounded-xl transition flex items-center justify-center space-x-1.5 ${
-                type === 'expense' ? 'bg-white/15 text-white shadow-sm border border-white/15' : 'text-zinc-400'
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition flex items-center justify-center space-x-1.5 ${
+                type === 'expense' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
               }`}
             >
-              <ArrowDownRight size={14} className="text-rose-400" />
+              <ArrowDownRight size={14} className="text-rose-500" />
               <span>Expense</span>
             </button>
             <button
               type="button"
               onClick={() => setType('income')}
-              className={`flex-1 py-1.5 text-xs font-semibold rounded-xl transition flex items-center justify-center space-x-1.5 ${
-                type === 'income' ? 'bg-white/15 text-white shadow-sm border border-white/15' : 'text-zinc-400'
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition flex items-center justify-center space-x-1.5 ${
+                type === 'income' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500'
               }`}
             >
-              <ArrowUpRight size={14} className="text-emerald-400" />
+              <ArrowUpRight size={14} className="text-emerald-500" />
               <span>Income</span>
             </button>
           </div>
 
           {/* App / Merchant Selector Grid */}
           <div>
-            <label className="block text-[11px] font-semibold text-zinc-400 mb-2">APP OR MERCHANT</label>
+            <label className="block text-[11px] font-bold text-slate-500 mb-2 uppercase">APP OR VENDOR</label>
             <div className="grid grid-cols-3 gap-2">
               {PRESET_MERCHANTS.map(m => {
                 const isSelected = merchant === m;
@@ -124,10 +125,10 @@ export const TransactionForm: React.FC<Props> = ({ onClose, defaultMerchant }) =
                     key={m}
                     type="button"
                     onClick={() => setMerchant(m)}
-                    className={`p-2 rounded-2xl border flex items-center space-x-2 text-xs font-medium transition active:scale-95 ${
+                    className={`p-2 rounded-xl border flex items-center space-x-2 text-xs font-medium transition active:scale-95 ${
                       isSelected
-                        ? 'bg-blue-600/30 border-blue-500/80 text-white shadow-sm shadow-blue-500/20'
-                        : 'glass-card-subtle text-zinc-300 hover:text-white'
+                        ? 'bg-indigo-50 border-indigo-200 text-indigo-700 font-semibold shadow-xs'
+                        : 'bg-slate-50 border-slate-200/80 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
                     <MerchantIcon name={m} size="xs" />
@@ -144,31 +145,31 @@ export const TransactionForm: React.FC<Props> = ({ onClose, defaultMerchant }) =
               type="text"
               value={merchant}
               onChange={e => setMerchant(e.target.value)}
-              className="w-full glass-card-subtle rounded-2xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white/20"
-              placeholder="Or type custom merchant..."
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 font-medium"
+              placeholder="Or type custom vendor name..."
             />
           </div>
 
           {/* Category & Date */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[11px] font-semibold text-zinc-400 mb-1">CATEGORY</label>
+              <label className="block text-[11px] font-bold text-slate-500 mb-1 uppercase">CATEGORY</label>
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value)}
-                className="w-full glass-card-subtle rounded-2xl px-3 py-2 text-xs text-white focus:outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
               >
-                {PRESET_CATEGORIES.map(c => <option key={c} value={c} className="bg-zinc-900 text-white">{c}</option>)}
+                {PRESET_CATEGORIES.map(c => <option key={c} value={c} className="bg-white text-slate-800">{c}</option>)}
               </select>
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-zinc-400 mb-1">DATE & TIME</label>
+              <label className="block text-[11px] font-bold text-slate-500 mb-1 uppercase">DATE & TIME</label>
               <input
                 type="datetime-local"
                 value={date}
                 onChange={e => setDate(e.target.value)}
-                className="w-full glass-card-subtle rounded-2xl px-3 py-2 text-xs text-white focus:outline-none [color-scheme:dark]"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 font-medium focus:outline-none focus:border-indigo-500"
               />
             </div>
           </div>
@@ -179,14 +180,14 @@ export const TransactionForm: React.FC<Props> = ({ onClose, defaultMerchant }) =
               type="text"
               value={note}
               onChange={e => setNote(e.target.value)}
-              placeholder="Add note..."
-              className="w-full glass-card-subtle rounded-2xl px-4 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none"
+              placeholder="Add note (optional)..."
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 font-medium"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:opacity-95 text-white font-semibold py-3 rounded-2xl transition shadow-lg shadow-indigo-500/25 border border-white/20 active:scale-95 text-xs"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3.5 rounded-xl transition shadow-lg shadow-indigo-500/25 active:scale-95 text-xs"
           >
             Save Transaction
           </button>

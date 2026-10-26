@@ -6,7 +6,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, B
 import { BarChart3, Plus, X } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 
-const COLORS = ['#FF9500', '#FFCC00', '#FF3B30', '#007AFF', '#AF52DE', '#30D158', '#5AC8FA', '#8E8E93'];
+const COLORS = ['#4F46E5', '#F43F5E', '#10B981', '#F59E0B', '#8B5CF6', '#06B6D4', '#EC4899', '#64748B'];
 
 const PRESET_CATEGORIES = [
   'Food & Dining',
@@ -92,34 +92,38 @@ const Insights: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 font-sans">
-      {/* iOS Header */}
+    <div className="space-y-8 font-sans">
+      {/* Header */}
       <header className="flex justify-between items-center pt-1">
-        <div className="flex items-center space-x-2.5">
-          <div className="w-9 h-9 rounded-full glass-pill flex items-center justify-center text-xs shadow-inner">
-            <BarChart3 size={16} className="text-blue-400" />
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-xs shadow-xs">
+            <BarChart3 size={18} className="text-indigo-600" />
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-white leading-none">Analytics</h1>
-            <p className="text-[11px] text-zinc-400 mt-0.5">Spending Breakdown</p>
+            <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900">Analytics</h1>
+            <p className="text-xs text-slate-500 font-medium">Spending Breakdown & Budget Limits</p>
           </div>
         </div>
-        <span className="text-xs text-zinc-400 font-medium glass-pill px-3 py-1 rounded-full">
+        <span className="text-xs text-slate-700 font-semibold bg-white border border-slate-200 px-3.5 py-1.5 rounded-full shadow-xs">
           {format(currentDate, 'MMMM yyyy')}
         </span>
       </header>
 
       {totalExpense === 0 ? (
-        <div className="text-center p-10 glass-card rounded-[28px]">
-          <p className="text-zinc-400 text-xs">No expense data recorded for this month.</p>
+        <div className="text-center p-12 modern-card rounded-2xl">
+          <p className="text-slate-500 text-xs font-medium">No expense data recorded for this month.</p>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+          
           {/* Category Donut Chart Widget */}
-          <div className="glass-card p-6 rounded-[32px] space-y-4">
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-              Spending by Category
-            </h3>
+          <div className="modern-card p-6 md:p-8 space-y-5">
+            <div>
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Spending by Category
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">Proportional monthly expense distribution</p>
+            </div>
 
             <div className="h-64 relative">
               <ResponsiveContainer width="100%" height="100%">
@@ -138,46 +142,50 @@ const Insights: React.FC = () => {
                   </Pie>
                   <RechartsTooltip 
                     formatter={(value: any) => [`₹${Number(value || 0).toLocaleString()}`, 'Amount']}
-                    contentStyle={{ backgroundColor: 'rgba(18,18,22,0.85)', backdropFilter: 'blur(20px)', borderColor: 'rgba(255,255,255,0.15)', borderRadius: '18px', color: '#fff', fontSize: '12px' }}
-                    itemStyle={{ color: '#fff' }}
+                    contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '12px', color: '#1e293b', fontSize: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                    itemStyle={{ color: '#1e293b', fontWeight: 'bold' }}
                   />
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[10px] text-zinc-400 uppercase tracking-widest font-semibold">Total</span>
-                <span className="font-extrabold text-2xl text-white">₹{totalExpense.toLocaleString()}</span>
+                <span className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold">Total</span>
+                <span className="font-extrabold text-2xl text-slate-900">₹{totalExpense.toLocaleString()}</span>
               </div>
             </div>
             
-            <div className="space-y-2 pt-2 border-t border-white/[0.06]">
+            <div className="space-y-2 pt-3 border-t border-slate-100">
               {pieData.map((entry, index) => (
                 <div key={entry.name} className="flex justify-between items-center py-1 text-xs">
                   <div className="flex items-center space-x-2.5">
-                    <div className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                    <span className="text-zinc-300 font-medium">{entry.name}</span>
+                    <div className="w-2.5 h-2.5 rounded-full shadow-xs" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                    <span className="text-slate-700 font-medium">{entry.name}</span>
                   </div>
-                  <span className="font-bold text-white">₹{entry.value.toLocaleString()}</span>
+                  <span className="font-bold text-slate-900">₹{entry.value.toLocaleString()}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Top Merchants Widget */}
-          <div className="glass-card p-6 rounded-[32px] space-y-4">
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-              Merchant Distribution
-            </h3>
-            <div className="h-56">
+          <div className="modern-card p-6 md:p-8 space-y-5">
+            <div>
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Merchant Distribution
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">Top 5 vendor spend rankings</p>
+            </div>
+
+            <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={barData} layout="vertical" margin={{ top: 0, right: 0, left: 35, bottom: 0 }}>
+                <BarChart data={barData} layout="vertical" margin={{ top: 0, right: 10, left: 35, bottom: 0 }}>
                   <XAxis type="number" hide />
-                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#a1a1aa', fontSize: 11 }} />
+                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#475569', fontSize: 11, fontWeight: 500 }} />
                   <RechartsTooltip
                     formatter={(value: any) => [`₹${Number(value || 0).toLocaleString()}`, 'Amount']}
-                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                    contentStyle={{ backgroundColor: 'rgba(18,18,22,0.85)', backdropFilter: 'blur(20px)', borderColor: 'rgba(255,255,255,0.15)', borderRadius: '18px', color: '#fff', fontSize: '12px' }}
+                    cursor={{ fill: 'rgba(79, 70, 229, 0.05)' }}
+                    contentStyle={{ backgroundColor: '#ffffff', borderColor: '#e2e8f0', borderRadius: '12px', color: '#1e293b', fontSize: '12px', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
                   />
-                  <Bar dataKey="amount" radius={[0, 6, 6, 0]}>
+                  <Bar dataKey="amount" radius={[0, 8, 8, 0]}>
                     {barData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
@@ -190,95 +198,102 @@ const Insights: React.FC = () => {
       )}
 
       {/* Category Budgets */}
-      <div className="space-y-3.5">
+      <section className="space-y-4">
         <div className="flex justify-between items-center px-1">
-          <h2 className="text-xs font-bold text-white uppercase tracking-wider">
-            Monthly Category Budgets
-          </h2>
+          <div>
+            <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              Monthly Category Budgets
+            </h2>
+            <p className="text-xs text-slate-400">Set spending thresholds and stay on track</p>
+          </div>
+
           <button 
             onClick={() => setShowBudgetForm(!showBudgetForm)}
-            className="h-8 glass-pill hover:bg-white/15 text-white px-3 rounded-full transition-all active:scale-95 font-semibold text-xs flex items-center space-x-1"
+            className="h-9 bg-indigo-600 hover:bg-indigo-700 text-white px-4 rounded-xl transition-all active:scale-95 font-semibold text-xs flex items-center space-x-1.5 shadow-md shadow-indigo-500/20"
           >
-            <Plus size={13} />
+            <Plus size={14} />
             <span>{showBudgetForm ? 'Cancel' : 'Set Limit'}</span>
           </button>
         </div>
 
         {showBudgetForm && (
-          <form onSubmit={handleSaveBudget} className="glass-card p-5 rounded-[28px] space-y-3.5">
-            <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleSaveBudget} className="modern-card p-6 rounded-2xl space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-semibold text-zinc-400 mb-1.5">CATEGORY</label>
+                <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase">CATEGORY</label>
                 <select
                   value={budgetCategory}
                   onChange={e => setBudgetCategory(e.target.value)}
-                  className="w-full h-10 glass-card-subtle rounded-xl px-3 text-xs text-white focus:outline-none"
+                  className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-3 text-xs text-slate-800 font-medium focus:border-indigo-500 focus:outline-none"
                 >
-                  {PRESET_CATEGORIES.map(c => <option key={c} value={c} className="bg-zinc-900">{c}</option>)}
+                  {PRESET_CATEGORIES.map(c => <option key={c} value={c} className="bg-white text-slate-800">{c}</option>)}
                 </select>
               </div>
 
               <div>
-                <label className="block text-[10px] font-semibold text-zinc-400 mb-1.5">LIMIT (₹)</label>
+                <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase">MONTHLY LIMIT (₹)</label>
                 <input
                   type="number"
                   required
                   value={budgetLimit}
                   onChange={e => setBudgetLimit(e.target.value)}
-                  className="w-full h-10 glass-card-subtle rounded-xl px-3 text-xs text-white focus:outline-none"
+                  className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-3 text-xs text-slate-800 font-bold focus:border-indigo-500 focus:outline-none"
                   placeholder="e.g. 5000"
                 />
               </div>
             </div>
 
-            <button type="submit" className="w-full h-10 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition shadow-md shadow-blue-500/25 active:scale-95">
-              Save Budget
+            <button type="submit" className="w-full h-11 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl transition shadow-md shadow-indigo-500/25 active:scale-95">
+              Save Budget Limit
             </button>
           </form>
         )}
 
         {(!budgets || budgets.length === 0) && !showBudgetForm && (
-          <p className="text-xs text-zinc-500 italic px-2">No category spending limits set for this month.</p>
+          <div className="modern-card p-8 text-center rounded-2xl">
+            <p className="text-xs text-slate-400 font-medium">No category spending limits set for this month.</p>
+          </div>
         )}
 
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {budgets?.map(budget => {
             const spent = categoryData[budget.category] || 0;
             const percentage = Math.min((spent / budget.limit) * 100, 100);
             
-            let color = '#30D158'; // Apple green
-            if (percentage >= 85) color = '#FF9500'; // Apple orange
-            if (percentage >= 100) color = '#FF3B30'; // Apple red
+            let color = '#10B981'; // Green
+            if (percentage >= 85) color = '#F59E0B'; // Amber
+            if (percentage >= 100) color = '#F43F5E'; // Coral red
 
             return (
-              <div key={budget.id} className="glass-card p-4.5 rounded-[24px] relative group">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-bold text-xs text-white">{budget.category}</span>
+              <div key={budget.id} className="modern-card p-5 rounded-2xl relative group space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold text-xs text-slate-900">{budget.category}</span>
                   <div className="text-xs">
-                    <span className="text-white font-bold">₹{spent.toLocaleString()}</span>
-                    <span className="text-zinc-400 text-[11px]"> / ₹{budget.limit.toLocaleString()}</span>
+                    <span className="text-slate-900 font-bold">₹{spent.toLocaleString()}</span>
+                    <span className="text-slate-400 font-normal"> / ₹{budget.limit.toLocaleString()}</span>
                   </div>
                 </div>
                 
-                {/* Frosted Bar */}
-                <div className="h-2 w-full bg-white/[0.06] rounded-full overflow-hidden p-0.5 border border-white/5">
+                {/* Progress Bar */}
+                <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/50">
                   <div 
-                    className="h-full rounded-full transition-all duration-500" 
+                    className="h-full rounded-full transition-all duration-500 shadow-xs" 
                     style={{ width: `${percentage}%`, backgroundColor: color }} 
                   />
                 </div>
 
-                <div className="flex justify-between items-center mt-2.5">
+                <div className="flex justify-between items-center pt-1">
                   {percentage >= 100 ? (
-                    <span className="text-[10px] text-rose-400 font-medium">Over budget by ₹{(spent - budget.limit).toLocaleString()}</span>
+                    <span className="text-[11px] text-rose-500 font-semibold">Over budget by ₹{(spent - budget.limit).toLocaleString()}</span>
                   ) : (
-                    <span className="text-[10px] text-zinc-400">₹{(budget.limit - spent).toLocaleString()} remaining</span>
+                    <span className="text-[11px] text-slate-500 font-medium">₹{(budget.limit - spent).toLocaleString()} remaining</span>
                   )}
 
                   <button 
                     onClick={() => handleDeleteBudget(budget.id)}
-                    className="text-zinc-500 hover:text-rose-400 p-1"
-                    title="Remove"
+                    className="text-slate-400 hover:text-rose-500 p-1 transition"
+                    title="Remove limit"
+                    aria-label="Remove limit"
                   >
                     <X size={14} />
                   </button>
@@ -287,7 +302,7 @@ const Insights: React.FC = () => {
             );
           })}
         </div>
-      </div>
+      </section>
     </div>
   );
 };

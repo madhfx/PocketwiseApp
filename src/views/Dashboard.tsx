@@ -3,10 +3,11 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import { RecurringEngine } from '../services/recurringEngine';
 import { format, startOfMonth, endOfMonth, isSameMonth, addMonths, subMonths } from 'date-fns';
-import { ChevronLeft, ChevronRight, CheckCircle2, TrendingUp, Sparkles, Wallet, ArrowDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CheckCircle2, TrendingUp, Plus, ArrowUpRight } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { MerchantIcon } from '../components/ui/MerchantIcon';
 import { TransactionForm } from '../components/forms/TransactionForm';
+import { Link } from 'react-router-dom';
 
 const FEATURED_APPS = [
   'Swiggy', 'Zomato', 'Blinkit', 'Zepto', 
@@ -14,17 +15,11 @@ const FEATURED_APPS = [
 ];
 
 const PRESET_CATEGORIES = [
-  { label: 'Food & Dining', icon: '🍔' },
-  { label: 'Shopping', icon: '🛍️' },
-  { label: 'Transport', icon: '🚕' },
-  { label: 'Subscriptions', icon: '🎬' },
-  { label: 'Other', icon: '💳' }
+  'Food & Dining', 'Shopping', 'Transport', 'Subscriptions', 'Other'
 ];
 
-const COLORS = ['#FF9500', '#FFCC00', '#FF3B30']; // iOS system orange, yellow, red
-
 const Dashboard: React.FC = () => {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 9, 10)); // October 2026 demo
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 9, 10)); // October 2026 default
   const [selectedMerchantModal, setSelectedMerchantModal] = useState<string | null>(null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
@@ -75,293 +70,326 @@ const Dashboard: React.FC = () => {
   const topMerchants = Object.keys(merchantData)
     .map(name => ({ name, amount: merchantData[name] }))
     .sort((a, b) => b.amount - a.amount)
-    .slice(0, 3);
-    
-  const maxMerchantAmount = topMerchants.length > 0 ? topMerchants[0].amount : 1;
+    .slice(0, 4);
 
-  // Quick Add State
-  const [amount, setAmount] = useState('');
-  const [merchant, setMerchant] = useState('Swiggy');
-  const [category, setCategory] = useState('Food & Dining');
-  const [note, setNote] = useState('');
+  // Quick Add State (Inline)
+  const [quickAmount, setQuickAmount] = useState('');
+  const [quickMerchant, setQuickMerchant] = useState('Swiggy');
+  const [quickCategory, setQuickCategory] = useState('Food & Dining');
 
-  const handleQuickAdd = async (e: React.FormEvent) => {
+  const handleQuickSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!amount || isNaN(Number(amount))) return;
+    if (!quickAmount || isNaN(Number(quickAmount))) return;
 
-    const numAmount = Number(amount);
+    const num = Number(quickAmount);
     await db.transactions.add({
       id: uuidv4(),
-      amount: numAmount,
-      merchantName: merchant || 'Unknown',
-      category,
+      amount: num,
+      merchantName: quickMerchant,
+      category: quickCategory,
       date: currentDate.getTime(),
-      note,
       type: 'expense',
       source: 'manual',
       createdAt: Date.now(),
       updatedAt: Date.now()
     });
 
-    setSuccessToast(`Logged ₹${numAmount.toLocaleString('en-IN')} to ${merchant}`);
-    setAmount('');
-    setNote('');
-
-    setTimeout(() => {
-      setSuccessToast(null);
-    }, 2800);
+    setSuccessToast(`Logged ₹${num.toLocaleString('en-IN')} to ${quickMerchant}`);
+    setQuickAmount('');
+    setTimeout(() => setSuccessToast(null), 2500);
   };
 
   return (
-    <div className="space-y-6 font-sans">
-      {/* Toast Feedback */}
+    <div className="space-y-8 font-sans">
+      {/* Toast Notification */}
       {successToast && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 glass-dock px-4 py-2.5 rounded-full shadow-2xl flex items-center space-x-2 text-xs font-semibold animate-in fade-in slide-in-from-top-3 duration-200">
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white px-5 py-3 rounded-full shadow-2xl flex items-center space-x-2.5 text-xs font-semibold animate-in fade-in slide-in-from-top-3 duration-200 border border-slate-700">
           <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
           <span>{successToast}</span>
         </div>
       )}
 
-      {/* Top Header & Dynamic Island Month Capsule */}
-      <header className="flex justify-between items-center pt-1">
-        <div className="flex items-center space-x-2.5">
-          <div className="w-9 h-9 rounded-full glass-pill flex items-center justify-center text-xs shadow-inner">
-            <Wallet size={16} className="text-blue-400" />
+      {/* Header: Brand + Month Switcher */}
+      <header className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div>
+          <div className="inline-flex items-center space-x-2 bg-slate-100 rounded-full px-3.5 py-1 mb-1.5">
+            <span className="flex h-2 w-2 rounded-full bg-coral"></span>
+            <span className="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
+              Smart Expense Tracker
+            </span>
           </div>
-          <div>
-            <h1 className="text-lg font-bold tracking-tight text-white leading-none">
-              Pocketwise
-            </h1>
-            <p className="text-[11px] text-zinc-400 mt-0.5">October Overview</p>
-          </div>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900">
+            Monthly Overview
+          </h1>
         </div>
 
-        {/* Month Selector Capsule */}
-        <div className="glass-pill rounded-full p-1 flex items-center space-x-1 shadow-sm">
+        {/* Month Selector Pill */}
+        <div className="bg-white border border-slate-200 rounded-full p-1.5 flex items-center space-x-1 shadow-sm self-start sm:self-auto">
           <button 
             onClick={() => setCurrentDate(subMonths(currentDate, 1))}
-            className="w-7 h-7 flex items-center justify-center hover:bg-white/10 text-white/70 hover:text-white rounded-full transition-all active:scale-90"
+            className="w-8 h-8 flex items-center justify-center hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-full transition active:scale-95"
             aria-label="Previous month"
           >
-            <ChevronLeft size={15} />
+            <ChevronLeft size={16} />
           </button>
-          <span className="text-xs font-semibold text-white px-1 tracking-tight min-w-[74px] text-center">
+          <span className="text-xs font-semibold text-slate-800 px-3 tracking-tight min-w-[84px] text-center">
             {format(currentDate, 'MMM yyyy')}
           </span>
           <button 
             onClick={() => setCurrentDate(addMonths(currentDate, 1))}
-            className="w-7 h-7 flex items-center justify-center hover:bg-white/10 text-white/70 hover:text-white rounded-full transition-all active:scale-90"
+            className="w-8 h-8 flex items-center justify-center hover:bg-slate-100 text-slate-600 hover:text-slate-900 rounded-full transition active:scale-95"
             aria-label="Next month"
           >
-            <ChevronRight size={15} />
+            <ChevronRight size={16} />
           </button>
         </div>
       </header>
 
-      {/* Pillar 1 & 5: Clear Visual Hierarchy & Breathing Room Hero Widget */}
-      <div className="glass-card rounded-[32px] p-6 space-y-5">
-        <div className="flex justify-between items-start">
-          <div>
-            <span className="text-[11px] font-bold tracking-widest uppercase text-zinc-400">
-              AVAILABLE TO SPEND
-            </span>
-            <div className="text-4xl md:text-5xl font-extrabold tracking-tight text-emerald-400 mt-1 flex items-baseline">
-              <span className="text-2xl md:text-3xl font-bold opacity-80 mr-1">₹</span>
-              <span>{availableBalance.toLocaleString('en-IN')}</span>
-            </div>
-          </div>
-
-          {totalIncome > 0 && (
-            <div className="text-right">
-              <span className="inline-flex items-center space-x-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 shadow-sm">
-                <span>{savingsRate}% saved</span>
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Spending Progress Line */}
-        <div className="space-y-2 pt-1">
-          <div className="flex justify-between items-center text-xs">
-            <span className="text-zinc-400 font-medium">Month-to-Date Spent</span>
-            <span className="font-bold text-white">₹{totalSpent.toLocaleString('en-IN')} <span className="text-zinc-500 font-normal">({spentPercentage}%)</span></span>
-          </div>
-
-          <div className="h-2.5 w-full bg-white/[0.06] rounded-full overflow-hidden p-0.5 border border-white/5">
-            <div 
-              className="h-full rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 transition-all duration-500 shadow-sm"
-              style={{ width: `${spentPercentage}%` }}
-            />
-          </div>
-        </div>
-
-        {/* Contextual Metric Cards */}
-        <div className="grid grid-cols-2 gap-2.5 pt-3 border-t border-white/[0.08]">
-          <div className="glass-card-subtle p-3 rounded-2xl">
-            <span className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider block">Take-Home Income</span>
-            <span className="text-sm font-bold text-white block mt-0.5">
-              ₹{totalIncome.toLocaleString('en-IN')}
-            </span>
-          </div>
-
-          <div className="glass-card-subtle p-3 rounded-2xl">
-            <span className="text-[10px] text-zinc-400 font-semibold uppercase tracking-wider block">Accrued Recurring</span>
-            <span className="text-sm font-bold text-amber-400 block mt-0.5">
-              ₹{accruedRecurring.toLocaleString('en-IN')}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Pillar 2 & 3: Fast Expense Launcher (Finger-friendly 44px+ touch targets) */}
-      <div className="glass-card rounded-[28px] p-5 space-y-3.5">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xs font-bold text-white uppercase tracking-wider flex items-center space-x-1.5">
-            <span>Fast Expense Launcher</span>
-            <Sparkles size={13} className="text-blue-400" />
-          </h2>
-          <span className="text-[11px] text-zinc-400">One-tap entry</span>
-        </div>
-
-        <div className="grid grid-cols-4 gap-3 pt-1">
-          {FEATURED_APPS.map(appName => (
-            <button
-              key={appName}
-              onClick={() => {
-                setSelectedMerchantModal(appName);
-                setMerchant(appName);
-              }}
-              className="flex flex-col items-center space-y-1.5 p-2 rounded-2xl hover:bg-white/[0.05] active:scale-90 transition-all duration-150 min-h-[64px]"
-            >
-              <div className="relative p-0.5 rounded-[18px] bg-gradient-to-b from-white/20 to-white/5 border border-white/15 shadow-md shadow-black/40">
-                <MerchantIcon name={appName} size="lg" className="rounded-[16px]" />
+      {/* Responsive Multi-column Grid (Mobile 1 column, Desktop 12 columns) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        
+        {/* Left Column (Hero & Analytics Outflows) */}
+        <div className="lg:col-span-7 space-y-8">
+          
+          {/* 1. Clear Visual Hierarchy: Dominant Available Balance Hero */}
+          <section className="modern-card p-6 md:p-8 space-y-6">
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
+                <span className="text-xs font-bold tracking-wider uppercase text-slate-400">
+                  AVAILABLE TO SPEND
+                </span>
+                <div className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900 flex items-baseline">
+                  <span className="text-2xl md:text-3xl font-bold text-slate-400 mr-1.5">₹</span>
+                  <span>{availableBalance.toLocaleString('en-IN')}</span>
+                </div>
+                <p className="text-xs text-slate-500 pt-0.5">
+                  of ₹{totalIncome.toLocaleString('en-IN')} monthly income
+                </p>
               </div>
-              <span className="text-[11px] font-medium text-zinc-300 truncate max-w-[64px] text-center">
-                {appName}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
 
-      {/* Top App Expenditures: Clean Scannable Hierarchy */}
-      <div className="glass-card rounded-[28px] p-5 space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xs font-bold text-white uppercase tracking-wider flex items-center space-x-1.5">
-            <TrendingUp size={13} className="text-orange-400" />
-            <span>Top App Outflows</span>
-          </h2>
-          <span className="text-[11px] text-zinc-400">Ranked</span>
-        </div>
+              {totalIncome > 0 && (
+                <span className="px-3.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  {savingsRate}% saved
+                </span>
+              )}
+            </div>
 
-        {topMerchants.length === 0 ? (
-          <p className="text-xs text-zinc-500 text-center py-4">No expenses recorded for this month.</p>
-        ) : (
-          <div className="space-y-4">
-            {topMerchants.map((item, idx) => {
-              const percentage = totalSpent > 0 ? Math.round((item.amount / totalSpent) * 100) : 0;
-              return (
-                <div key={item.name} className="space-y-1.5">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-3">
-                      <div className="p-0.5 rounded-[14px] bg-white/10 border border-white/15 shadow-sm">
-                        <MerchantIcon name={item.name} size="sm" className="rounded-[12px]" />
+            {/* High Contrast Progress Line */}
+            <div className="space-y-2 pt-1">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-slate-500 font-medium">Month-to-Date Outflow</span>
+                <span className="font-semibold text-slate-900">
+                  ₹{totalSpent.toLocaleString('en-IN')} <span className="text-slate-400 font-normal">({spentPercentage}%)</span>
+                </span>
+              </div>
+
+              <div className="h-3 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/50">
+                <div 
+                  className="h-full rounded-full bg-gradient-to-r from-indigo-500 to-indigo-600 transition-all duration-500 shadow-sm"
+                  style={{ width: `${spentPercentage}%` }}
+                />
+              </div>
+            </div>
+
+            {/* Contextual Metric Cards */}
+            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-100">
+              <div className="modern-card-subtle p-4 rounded-2xl">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Actual Expenses</span>
+                <span className="text-base font-bold text-slate-800 block mt-1">
+                  ₹{actualExpenses.toLocaleString('en-IN')}
+                </span>
+              </div>
+
+              <div className="modern-card-subtle p-4 rounded-2xl">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">Accrued Recurring</span>
+                <span className="text-base font-bold text-indigo-600 block mt-1">
+                  ₹{accruedRecurring.toLocaleString('en-IN')}
+                </span>
+              </div>
+            </div>
+          </section>
+
+          {/* 2. Fast Launch Brand Grid: 44px+ Touch Targets */}
+          <section className="space-y-3.5">
+            <div className="flex justify-between items-center px-1">
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Quick Log by Brand
+              </h2>
+              <span className="text-[11px] text-slate-400">1-Tap Fast Launch</span>
+            </div>
+
+            <div className="grid grid-cols-4 gap-3">
+              {FEATURED_APPS.map(appName => (
+                <button
+                  key={appName}
+                  onClick={() => {
+                    setSelectedMerchantModal(appName);
+                  }}
+                  className="modern-card p-3 rounded-2xl flex flex-col items-center space-y-2 hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-200 min-h-[82px] justify-center group"
+                >
+                  <div className="p-1 rounded-xl bg-slate-100 border border-slate-200/80 shadow-xs group-hover:scale-105 transition-transform">
+                    <MerchantIcon name={appName} size="sm" className="rounded-lg" />
+                  </div>
+                  <span className="text-xs font-medium text-slate-700 truncate max-w-[66px] text-center">
+                    {appName}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          {/* 3. Top Outflows: Ranked List with Clear Hierarchy */}
+          <section className="space-y-3.5">
+            <div className="flex justify-between items-center px-1">
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center space-x-1.5">
+                <TrendingUp size={14} className="text-indigo-600" />
+                <span>Top App Outflows</span>
+              </h2>
+              <Link to="/insights" className="text-xs text-indigo-600 hover:text-indigo-700 font-semibold flex items-center space-x-0.5">
+                <span>View Analytics</span>
+                <ArrowUpRight size={13} />
+              </Link>
+            </div>
+
+            {topMerchants.length === 0 ? (
+              <div className="modern-card p-8 text-center rounded-2xl">
+                <p className="text-xs text-slate-400 font-medium">No expenses recorded yet for this month.</p>
+              </div>
+            ) : (
+              <div className="modern-card rounded-2xl divide-y divide-slate-100 overflow-hidden">
+                {topMerchants.map((item, idx) => {
+                  const percentage = totalSpent > 0 ? Math.round((item.amount / totalSpent) * 100) : 0;
+                  return (
+                    <div key={item.name} className="p-4 flex items-center justify-between hover:bg-slate-50/70 transition">
+                      <div className="flex items-center space-x-3.5">
+                        <div className="p-1 rounded-xl bg-slate-100 border border-slate-200/80 shadow-xs">
+                          <MerchantIcon name={item.name} size="md" className="rounded-lg" />
+                        </div>
+                        <div>
+                          <span className="font-semibold text-xs text-slate-900 block">{item.name}</span>
+                          <span className="text-[11px] text-slate-500">{percentage}% of all expenses</span>
+                        </div>
                       </div>
-                      <div>
-                        <span className="font-bold text-xs text-white block">{item.name}</span>
-                        <span className="text-[10px] text-zinc-400">{percentage}% of total expenses</span>
+
+                      <div className="text-right">
+                        <span className="font-bold text-sm text-slate-900 block">
+                          ₹{item.amount.toLocaleString('en-IN')}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-medium">
+                          #{idx + 1} Merchant
+                        </span>
                       </div>
                     </div>
-                    <span className="font-bold text-sm text-white">₹{item.amount.toLocaleString('en-IN')}</span>
-                  </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        </div>
 
-                  {/* Frosted Progress Bar */}
-                  <div className="h-2 w-full bg-white/[0.06] rounded-full overflow-hidden p-0.5 border border-white/5">
-                    <div 
-                      className="h-full rounded-full transition-all duration-500 shadow-sm"
-                      style={{ 
-                        width: `${(item.amount / maxMerchantAmount) * 100}%`,
-                        backgroundColor: COLORS[idx % COLORS.length]
-                      }}
-                    />
-                  </div>
+        {/* Right Column (Quick Entry Form & Financial Insights) */}
+        <div className="lg:col-span-5 space-y-8">
+          
+          {/* Quick Expense Entry Form in Thumb Zone */}
+          <section className="modern-card p-6 md:p-7 space-y-5">
+            <div>
+              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Quick Record
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">Instant one-handed expense logger</p>
+            </div>
+
+            <form onSubmit={handleQuickSubmit} className="space-y-4">
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">
+                  AMOUNT (₹)
+                </label>
+                <div className="bg-slate-50 border border-slate-200 h-12 rounded-xl flex items-center px-4 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition">
+                  <span className="text-slate-400 font-bold text-base mr-2">₹</span>
+                  <input
+                    type="number"
+                    step="any"
+                    required
+                    value={quickAmount}
+                    onChange={e => setQuickAmount(e.target.value)}
+                    className="w-full bg-transparent text-base font-bold text-slate-900 placeholder-slate-400 focus:outline-none"
+                    placeholder="0.00"
+                  />
                 </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+              </div>
 
-      {/* Pillar 4: Ergonomic Quick Entry Form in the Thumb Zone */}
-      <div className="glass-card rounded-[28px] p-5 space-y-4">
-        <h2 className="text-xs font-bold text-white uppercase tracking-wider">
-          Quick Expense Entry
-        </h2>
-
-        <form onSubmit={handleQuickAdd} className="space-y-4">
-          <div>
-            <label className="block text-[11px] font-semibold text-zinc-400 mb-1.5">AMOUNT (₹)</label>
-            <div className="glass-card-subtle h-[50px] rounded-2xl flex items-center px-4 focus-within:border-blue-500/80 transition-all">
-              <span className="text-zinc-500 font-bold text-base mr-2">₹</span>
-              <input
-                type="number"
-                step="any"
-                required
-                value={amount}
-                onChange={e => setAmount(e.target.value)}
-                className="w-full bg-transparent text-lg font-bold text-white placeholder-zinc-600 focus:outline-none"
-                placeholder="0.00"
-              />
-            </div>
-          </div>
-
-          {/* Category Chips with comfortable touch target */}
-          <div>
-            <label className="block text-[11px] font-semibold text-zinc-400 mb-2">CATEGORY</label>
-            <div className="flex flex-wrap gap-2">
-              {PRESET_CATEGORIES.map(c => {
-                const isSelected = category === c.label;
-                return (
-                  <button
-                    key={c.label}
-                    type="button"
-                    onClick={() => setCategory(c.label)}
-                    className={`h-9 px-3.5 rounded-xl text-xs font-medium transition-all active:scale-95 flex items-center space-x-1.5 ${
-                      isSelected
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25 border border-white/20'
-                        : 'glass-card-subtle text-zinc-400 hover:text-white'
-                    }`}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">
+                    MERCHANT
+                  </label>
+                  <select
+                    value={quickMerchant}
+                    onChange={e => setQuickMerchant(e.target.value)}
+                    className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-3 text-xs text-slate-800 font-medium focus:border-indigo-500 focus:outline-none"
                   >
-                    <span>{c.icon}</span>
-                    <span>{c.label}</span>
-                  </button>
-                );
-              })}
+                    {FEATURED_APPS.map(app => (
+                      <option key={app} value={app} className="bg-white text-slate-800">{app}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">
+                    CATEGORY
+                  </label>
+                  <select
+                    value={quickCategory}
+                    onChange={e => setQuickCategory(e.target.value)}
+                    className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-3 text-xs text-slate-800 font-medium focus:border-indigo-500 focus:outline-none"
+                  >
+                    {PRESET_CATEGORIES.map(c => (
+                      <option key={c} value={c} className="bg-white text-slate-800">{c}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-xs flex items-center justify-center space-x-2 active:scale-95 transition shadow-lg shadow-indigo-500/25"
+              >
+                <Plus size={16} strokeWidth={2.5} />
+                <span>Record Expense</span>
+              </button>
+            </form>
+          </section>
+
+          {/* Cash Flow Summary Widget */}
+          <section className="modern-card p-6 space-y-4">
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              Cash Flow Breakdown
+            </h3>
+            
+            <div className="space-y-3 text-xs">
+              <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                <span className="text-slate-500">Base Salary / Income</span>
+                <span className="font-bold text-slate-800">₹{totalIncome.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                <span className="text-slate-500">Manual Expenses</span>
+                <span className="font-bold text-slate-800">-₹{actualExpenses.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                <span className="text-slate-500">Accrued Subscriptions</span>
+                <span className="font-bold text-indigo-600">-₹{accruedRecurring.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 pt-3 font-semibold text-sm">
+                <span className="text-slate-700">Net Balance Remaining</span>
+                <span className="text-emerald-600 font-extrabold">₹{availableBalance.toLocaleString('en-IN')}</span>
+              </div>
             </div>
-          </div>
+          </section>
 
-          {/* Note Input */}
-          <div>
-            <input
-              type="text"
-              value={note}
-              onChange={e => setNote(e.target.value)}
-              placeholder="Add note (optional)..."
-              className="w-full h-11 glass-card-subtle rounded-2xl px-4 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white/20"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full h-12 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:brightness-105 text-white font-semibold rounded-2xl text-xs shadow-lg shadow-indigo-500/25 border border-white/20 active:scale-95 transition-all duration-150 flex items-center justify-center space-x-2"
-          >
-            <span>Log Expense</span>
-            <ArrowDown size={15} />
-          </button>
-        </form>
+        </div>
       </div>
 
-      {/* Modal from Fast Launcher */}
+      {/* Transaction Modal when tapping Brand squircle */}
       {selectedMerchantModal && (
         <TransactionForm
           defaultMerchant={selectedMerchantModal}

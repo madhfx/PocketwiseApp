@@ -36,40 +36,40 @@ const Recurring: React.FC = () => {
 
   return (
     <div className="space-y-6 font-sans">
-      {/* iOS Header */}
+      {/* Header */}
       <header className="flex justify-between items-center pt-1">
-        <div className="flex items-center space-x-2.5">
-          <div className="w-9 h-9 rounded-full glass-pill flex items-center justify-center text-xs shadow-inner">
-            <Clock size={16} className="text-amber-400" />
+        <div className="flex items-center space-x-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center text-xs shadow-xs">
+            <Clock size={18} className="text-amber-600" />
           </div>
           <div>
-            <h1 className="text-lg font-bold tracking-tight text-white leading-none">Recurring</h1>
-            <p className="text-[11px] text-zinc-400 mt-0.5">Commitment Manager</p>
+            <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900">Recurring</h1>
+            <p className="text-xs text-slate-500 font-medium">Automated Accruals & Subscriptions</p>
           </div>
         </div>
 
         <button 
           onClick={() => setShowForm(true)}
-          className="h-9 glass-pill hover:bg-white/15 px-3.5 rounded-full flex items-center space-x-1.5 text-xs font-semibold text-white transition-all active:scale-95 shadow-sm"
+          className="h-10 bg-indigo-600 hover:bg-indigo-700 text-white px-4 rounded-xl flex items-center space-x-1.5 text-xs font-semibold transition-all active:scale-95 shadow-md shadow-indigo-500/20"
         >
-          <Plus size={14} strokeWidth={2.5} />
+          <Plus size={15} strokeWidth={2.5} />
           <span>Add Rule</span>
         </button>
       </header>
 
-      {/* Projection Glass Card */}
+      {/* Projection Card */}
       {rules && rules.length > 0 && (
-        <div className="glass-card rounded-[32px] p-6 flex justify-between items-center">
+        <div className="modern-card rounded-2xl p-6 flex justify-between items-center">
           <div>
-            <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider block">
+            <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wider block">
               Estimated Monthly Commitments
             </span>
-            <span className="text-2xl font-extrabold text-white mt-1 block">
+            <span className="text-3xl font-extrabold text-slate-900 mt-1 block">
               ₹{monthlyProjectedTotal.toLocaleString('en-IN')}
             </span>
-            <span className="text-[11px] text-zinc-400">Accrued daily based on calendar days</span>
+            <span className="text-xs text-slate-500">Accrued daily based on calendar days to protect cash flow</span>
           </div>
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/25 flex items-center justify-center text-amber-400 shadow-sm shrink-0">
+          <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-600 shadow-xs shrink-0">
             <Clock size={22} />
           </div>
         </div>
@@ -77,19 +77,19 @@ const Recurring: React.FC = () => {
 
       {/* Empty State */}
       {rules && rules.length === 0 && (
-        <div className="glass-card rounded-[28px] p-10 text-center flex flex-col items-center">
-          <div className="w-12 h-12 rounded-2xl glass-pill flex items-center justify-center text-zinc-400 mb-3">
+        <div className="modern-card rounded-2xl p-12 text-center flex flex-col items-center">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
             <Clock size={22} />
           </div>
-          <p className="text-white font-semibold text-sm mb-1">No recurring rules</p>
-          <p className="text-zinc-400 text-xs mb-5 max-w-xs leading-relaxed">
-            Add recurring commitments like daily Swiggy, Netflix, or house rent to automatically forecast available balances.
+          <p className="text-slate-900 font-bold text-base mb-1">No recurring rules configured</p>
+          <p className="text-slate-500 text-xs mb-6 max-w-sm leading-relaxed">
+            Add recurring commitments like daily Swiggy, Netflix, or house rent to automatically forecast and protect your available spend balance.
           </p>
           <button 
             onClick={() => setShowForm(true)}
-            className="h-10 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 rounded-2xl text-xs transition shadow-md shadow-blue-500/25 active:scale-95"
+            className="h-11 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 rounded-xl text-xs transition shadow-md shadow-indigo-500/25 active:scale-95"
           >
-            Create First Rule
+            Create First Recurring Rule
           </button>
         </div>
       )}
@@ -102,58 +102,58 @@ const Recurring: React.FC = () => {
           return (
             <div 
               key={rule.id} 
-              className={`glass-card rounded-[28px] p-5 transition-all ${
-                isActive ? '' : 'opacity-60'
+              className={`modern-card rounded-2xl p-5 transition-all ${
+                isActive ? '' : 'opacity-60 bg-slate-50'
               }`}
             >
               <div className="flex justify-between items-start mb-3">
-                <div className="flex items-center space-x-3">
-                  <div className="p-0.5 rounded-[16px] bg-gradient-to-b from-white/15 to-white/5 border border-white/10 shadow-sm">
-                    <MerchantIcon name={rule.merchantName} size="md" className="rounded-[14px]" />
+                <div className="flex items-center space-x-3.5">
+                  <div className="p-1 rounded-xl bg-slate-100 border border-slate-200/80 shadow-xs">
+                    <MerchantIcon name={rule.merchantName} size="md" className="rounded-lg" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-xs text-white">{rule.merchantName}</h3>
-                    <p className="text-[11px] text-zinc-400">{rule.category}</p>
+                    <h3 className="font-semibold text-xs text-slate-900">{rule.merchantName}</h3>
+                    <p className="text-[11px] text-slate-500">{rule.category}</p>
                   </div>
                 </div>
 
                 <div className="text-right">
-                  <span className="font-bold text-xs text-white block">
+                  <span className="font-bold text-sm text-slate-900 block">
                     -₹{rule.amount.toLocaleString('en-IN')}
                   </span>
-                  <span className="text-[10px] text-zinc-400 uppercase tracking-wider capitalize">
+                  <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider capitalize">
                     {rule.frequency}
                   </span>
                 </div>
               </div>
 
               {/* Badges */}
-              <div className="flex flex-wrap items-center gap-2 mb-3.5 text-[10px]">
-                <span className="glass-card-subtle text-zinc-300 px-2.5 py-1 rounded-lg">
+              <div className="flex flex-wrap items-center gap-2 mb-3.5 text-[11px]">
+                <span className="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-lg border border-slate-200/60 font-medium">
                   Since {format(parseISO(rule.startDate), 'MMM d, yyyy')}
                 </span>
 
                 {rule.mode === 'forecast' ? (
-                  <span className="bg-blue-500/15 text-blue-400 border border-blue-500/20 px-2.5 py-1 rounded-lg flex items-center space-x-1 font-medium">
-                    <ShieldCheck size={11} />
+                  <span className="bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 rounded-lg flex items-center space-x-1 font-semibold">
+                    <ShieldCheck size={12} />
                     <span>Forecast Mode</span>
                   </span>
                 ) : (
-                  <span className="bg-purple-500/15 text-purple-400 border border-purple-500/20 px-2.5 py-1 rounded-lg flex items-center space-x-1 font-medium">
-                    <Zap size={11} />
+                  <span className="bg-purple-50 text-purple-700 border border-purple-100 px-2.5 py-1 rounded-lg flex items-center space-x-1 font-semibold">
+                    <Zap size={12} />
                     <span>Auto-Record</span>
                   </span>
                 )}
               </div>
 
               {/* Actions Footer */}
-              <div className="flex justify-between items-center pt-3 border-t border-white/[0.06] text-xs">
+              <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-xs">
                 <button
                   onClick={() => toggleStatus(rule.id, rule.status)}
-                  className={`h-8 flex items-center space-x-1.5 font-semibold px-3 rounded-xl transition text-xs active:scale-95 ${
+                  className={`h-8 flex items-center space-x-1.5 font-semibold px-3 rounded-lg transition text-xs active:scale-95 ${
                     isActive 
-                      ? 'text-amber-400 bg-amber-400/10 hover:bg-amber-400/20' 
-                      : 'text-emerald-400 bg-emerald-400/10 hover:bg-emerald-400/20'
+                      ? 'text-amber-700 bg-amber-50 hover:bg-amber-100' 
+                      : 'text-emerald-700 bg-emerald-50 hover:bg-emerald-100'
                   }`}
                 >
                   {isActive ? <PauseCircle size={15} /> : <PlayCircle size={15} />}
@@ -162,8 +162,9 @@ const Recurring: React.FC = () => {
 
                 <button
                   onClick={() => handleDelete(rule.id)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition active:scale-90"
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition active:scale-90"
                   title="Delete rule"
+                  aria-label="Delete rule"
                 >
                   <Trash2 size={15} />
                 </button>
