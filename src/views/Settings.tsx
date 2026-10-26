@@ -2,8 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import { format } from 'date-fns';
-import { Cloud, Download, Upload, ShieldAlert, CheckCircle2, Shield, SlidersHorizontal, User, RefreshCw } from 'lucide-react';
+import { 
+  Cloud, Download, Upload, ShieldAlert, CheckCircle2, Shield, 
+  SlidersHorizontal, User, RefreshCw, Building2, Plus, ArrowRight 
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { GoogleDriveService } from '../services/googleDriveService';
+import { MerchantFormModal } from '../components/forms/MerchantFormModal';
 
 const Settings: React.FC = () => {
   const currentMonthStr = format(new Date(2026, 9, 1), 'yyyy-MM');
@@ -16,11 +21,13 @@ const Settings: React.FC = () => {
   const settings = useLiveQuery(() => db.settings.get('default'));
   const totalTxCount = useLiveQuery(() => db.transactions.count());
   const totalRulesCount = useLiveQuery(() => db.recurringRules.count());
+  const totalMerchantsCount = useLiveQuery(() => db.merchants.count());
 
   const [baseSalary, setBaseSalary] = useState('');
   const [clientId, setClientId] = useState('');
   const [isSyncing, setIsSyncing] = useState(false);
   const [isReloading, setIsReloading] = useState(false);
+  const [showMerchantModal, setShowMerchantModal] = useState(false);
   const [syncStatus, setSyncStatus] = useState<{success: boolean, msg: string} | null>(null);
   const [incomeSaved, setIncomeSaved] = useState(false);
 
@@ -81,6 +88,7 @@ const Settings: React.FC = () => {
       transactions: await db.transactions.toArray(),
       recurringRules: await db.recurringRules.toArray(),
       monthlyIncomes: await db.monthlyIncomes.toArray(),
+      merchants: await db.merchants.toArray(),
       budgets: await db.budgets.toArray(),
       settings: await db.settings.toArray()
     };
@@ -103,10 +111,11 @@ const Settings: React.FC = () => {
         if (data.transactions && Array.isArray(data.transactions)) {
           if (!confirm('This will MERGE imported data with your existing records. Continue?')) return;
           
-          await db.transaction('rw', db.transactions, db.recurringRules, db.monthlyIncomes, db.budgets, async () => {
+          await db.transaction('rw', db.transactions, db.recurringRules, db.monthlyIncomes, db.merchants, db.budgets, async () => {
             if (data.transactions.length > 0) await db.transactions.bulkPut(data.transactions);
             if (data.recurringRules.length > 0) await db.recurringRules.bulkPut(data.recurringRules);
             if (data.monthlyIncomes.length > 0) await db.monthlyIncomes.bulkPut(data.monthlyIncomes);
+            if (data.merchants?.length > 0) await db.merchants.bulkPut(data.merchants);
             if (data.budgets?.length > 0) await db.budgets.bulkPut(data.budgets);
           });
           alert('Data imported successfully!');
@@ -132,6 +141,7 @@ const Settings: React.FC = () => {
         transactions: await db.transactions.toArray(),
         recurringRules: await db.recurringRules.toArray(),
         monthlyIncomes: await db.monthlyIncomes.toArray(),
+        merchants: await db.merchants.toArray(),
         budgets: await db.budgets.toArray(),
         settings: await db.settings.toArray()
       };
@@ -172,10 +182,11 @@ const Settings: React.FC = () => {
       const data = await driveService.downloadBackup();
       
       if (data && data.transactions) {
-        await db.transaction('rw', db.transactions, db.recurringRules, db.monthlyIncomes, db.budgets, async () => {
+        await db.transaction('rw', db.transactions, db.recurringRules, db.monthlyIncomes, db.merchants, db.budgets, async () => {
           if (data.transactions.length > 0) await db.transactions.bulkPut(data.transactions);
           if (data.recurringRules.length > 0) await db.recurringRules.bulkPut(data.recurringRules);
           if (data.monthlyIncomes.length > 0) await db.monthlyIncomes.bulkPut(data.monthlyIncomes);
+          if (data.merchants?.length > 0) await db.merchants.bulkPut(data.merchants);
           if (data.budgets?.length > 0) await db.budgets.bulkPut(data.budgets);
         });
         setSyncStatus({ success: true, msg: 'Data restored successfully!' });
@@ -217,7 +228,7 @@ const Settings: React.FC = () => {
           </div>
           <div>
             <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900">Settings</h1>
-            <p className="text-xs text-slate-500 font-medium">Preferences, Cloud Backup & Sync</p>
+            <p className="text-xs text-slate-500 font-medium">Preferences, Brands, Backup & Cloud Sync</p>
           </div>
         </div>
       </header>
@@ -231,13 +242,58 @@ const Settings: React.FC = () => {
         <div className="flex-1 min-w-0">
           <h2 className="text-base font-extrabold text-slate-900 tracking-tight">Pocketwise User</h2>
           <p className="text-xs text-slate-500 mt-0.5 truncate">
-            {totalTxCount || 0} recorded transactions • {totalRulesCount || 0} active rules
+            {totalTxCount || 0} recorded transactions • {totalRulesCount || 0} active rules • {totalMerchantsCount || 0} brands & clients
           </p>
           <span className="inline-block mt-2 text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100">
             Encrypted Local PWA
           </span>
         </div>
       </div>
+
+      {/* Grouped Section: Brands & Clients Directory */}
+      <section className="space-y-3">
+        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider px-1">
+          BRANDS & CLIENTS DIRECTORY
+        </span>
+
+        <div className="modern-card p-6 rounded-2xl space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3.5">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+                <Building2 size={18} />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-slate-800">Merchants & Clients Management</h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  {totalMerchantsCount || 0} registered vendors, clients, domains, and custom logos
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowMerchantModal(true)}
+              className="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition active:scale-95 shadow-md shadow-indigo-500/20"
+            >
+              <Plus size={14} />
+              <span>Add Entity</span>
+            </button>
+          </div>
+
+          <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
+            <span className="text-slate-500 font-medium">
+              Upload logo images, set websites, or choose Home screen pins
+            </span>
+            <Link
+              to="/merchants"
+              className="font-bold text-indigo-600 hover:text-indigo-700 flex items-center space-x-1"
+            >
+              <span>Manage Directory</span>
+              <ArrowRight size={13} />
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* Grouped Section: Monthly Salary */}
       <section className="space-y-3">
@@ -396,7 +452,7 @@ const Settings: React.FC = () => {
 
         <div className="modern-card p-6 rounded-2xl space-y-4">
           <div>
-            <h3 className="text-sm font-bold text-slate-800">Version v2.0.0 (Modern UI)</h3>
+            <h3 className="text-sm font-bold text-slate-800">Version v2.1.0 (Custom Brands & Logos)</h3>
             <p className="text-xs text-slate-400 mt-0.5">Bypass service worker cache and reload latest design</p>
           </div>
 
@@ -415,9 +471,16 @@ const Settings: React.FC = () => {
       <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5 text-xs text-slate-500 flex items-start space-x-3.5">
         <Shield size={20} className="text-indigo-600 shrink-0 mt-0.5" />
         <p className="text-xs leading-relaxed">
-          Pocketwise is 100% private and client-side: your finances reside exclusively in your browser's IndexedDB and are never sent to any third-party analytics or external database.
+          Pocketwise is 100% private and client-side: your finances, merchants, and custom logos reside exclusively in your browser's IndexedDB and are never sent to any external server.
         </p>
       </div>
+
+      {/* Merchant Form Modal */}
+      {showMerchantModal && (
+        <MerchantFormModal
+          onClose={() => setShowMerchantModal(false)}
+        />
+      )}
     </div>
   );
 };

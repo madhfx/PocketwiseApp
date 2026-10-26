@@ -6,6 +6,7 @@ import Transactions from './views/Transactions';
 import Insights from './views/Insights';
 import Recurring from './views/Recurring';
 import Settings from './views/Settings';
+import Merchants from './views/Merchants';
 
 const App: React.FC = () => {
   return (
@@ -16,6 +17,7 @@ const App: React.FC = () => {
           <Route path="transactions" element={<Transactions />} />
           <Route path="insights" element={<Insights />} />
           <Route path="recurring" element={<Recurring />} />
+          <Route path="merchants" element={<Merchants />} />
           <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>

@@ -42,9 +42,14 @@ export interface MonthlyIncome {
 export interface Merchant {
   id: string;
   name: string;
+  type: 'merchant' | 'client' | 'both';
   defaultCategory: string;
-  icon?: string;
+  domain?: string;
+  logoUrl?: string; // Direct image URL or base64 data URL
+  isFeatured: boolean;
   isPreset: boolean;
+  createdAt?: number;
+  updatedAt?: number;
 }
 
 export interface Budget {

@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
-import { LayoutDashboard, ReceiptText, BarChart3, Clock, SlidersHorizontal, Plus } from 'lucide-react';
+import { LayoutDashboard, ReceiptText, BarChart3, Clock, SlidersHorizontal, Plus, Building2 } from 'lucide-react';
 import clsx from 'clsx';
 import { TransactionForm } from '../forms/TransactionForm';
 
-const navItems = [
+const mobileNavItemsLeft = [
+  { to: '/', icon: LayoutDashboard, label: 'Overview' },
+  { to: '/transactions', icon: ReceiptText, label: 'Activity' },
+];
+
+const mobileNavItemsRight = [
+  { to: '/recurring', icon: Clock, label: 'Recurring' },
+  { to: '/settings', icon: SlidersHorizontal, label: 'Settings' },
+];
+
+const desktopNavItems = [
   { to: '/', icon: LayoutDashboard, label: 'Overview' },
   { to: '/transactions', icon: ReceiptText, label: 'Activity' },
   { to: '/insights', icon: BarChart3, label: 'Insights' },
   { to: '/recurring', icon: Clock, label: 'Recurring' },
+  { to: '/merchants', icon: Building2, label: 'Brands & Clients' },
   { to: '/settings', icon: SlidersHorizontal, label: 'Settings' },
 ];
 
@@ -16,7 +27,7 @@ export const ModernBottomBar: React.FC<{ onOpenAdd: () => void }> = ({ onOpenAdd
   return (
     <div className="fixed bottom-5 left-0 right-0 z-50 px-4 pb-[env(safe-area-inset-bottom)] md:hidden pointer-events-none">
       <nav className="modern-dock max-w-sm mx-auto rounded-full p-1.5 flex items-center justify-between pointer-events-auto">
-        {navItems.slice(0, 2).map((item) => (
+        {mobileNavItemsLeft.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -47,7 +58,7 @@ export const ModernBottomBar: React.FC<{ onOpenAdd: () => void }> = ({ onOpenAdd
           <Plus size={22} strokeWidth={2.8} />
         </button>
 
-        {navItems.slice(2).map((item) => (
+        {mobileNavItemsRight.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
@@ -88,7 +99,7 @@ export const ModernSideNav: React.FC<{ onOpenAdd: () => void }> = ({ onOpenAdd }
         </div>
 
         <div className="space-y-1.5">
-          {navItems.map((item) => (
+          {desktopNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}

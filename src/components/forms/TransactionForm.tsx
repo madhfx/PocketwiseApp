@@ -1,18 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/database';
 import { v4 as uuidv4 } from 'uuid';
-import { X, ArrowDownRight, ArrowUpRight } from 'lucide-react';
+import { X, ArrowDownRight, ArrowUpRight, Plus } from 'lucide-react';
 import { MerchantIcon } from '../ui/MerchantIcon';
-
-const PRESET_MERCHANTS = [
-  'Swiggy', 'Zomato', 'Blinkit', 'Zepto', 'Amazon', 
-  'Flipkart', 'Uber', 'Ola', 'Rapido', 'Google Pay', 
-  'PhonePe', 'Paytm', 'Netflix', 'YouTube', 'Spotify'
-];
+import { MerchantFormModal } from './MerchantFormModal';
 
 const PRESET_CATEGORIES = [
   'Food & Dining', 'Groceries', 'Shopping', 'Transport', 'Rent', 
-  'Bills & Utilities', 'Subscriptions', 'Health', 'Entertainment', 'Other'
+  'Bills & Utilities', 'Subscriptions', 'Health', 'Entertainment', 'Salary', 'Freelance', 'Other'
 ];
 
 interface Props {
@@ -27,6 +23,35 @@ export const TransactionForm: React.FC<Props> = ({ onClose, defaultMerchant }) =
   const [date, setDate] = useState(new Date().toISOString().slice(0, 16));
   const [note, setNote] = useState('');
   const [type, setType] = useState<'expense' | 'income'>('expense');
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  // Dynamic merchants from database
+  const dbMerchants = useLiveQuery(() => db.merchants.toArray(), []);
+
+  // Filter based on transaction type (Expense = Merchants, Income = Clients)
+  const availableEntities = (dbMerchants || []).filter(m => {
+    if (type === 'expense') return m.type === 'merchant' || m.type === 'both';
+    if (type === 'income') return m.type === 'client' || m.type === 'both';
+    return true;
+  });
+
+  // Switch default merchant if switching to income and current merchant is an expense
+  useEffect(() => {
+    if (type === 'income') {
+      const client = dbMerchants?.find(m => m.type === 'client');
+      if (client) {
+        setMerchant(client.name);
+        if (client.defaultCategory) setCategory(client.defaultCategory);
+      }
+    } else if (type === 'expense' && defaultMerchant) {
+      setMerchant(defaultMerchant);
+    }
+  }, [type]);
+
+  const handleSelectEntity = (name: string, defaultCat?: string) => {
+    setMerchant(name);
+    if (defaultCat) setCategory(defaultCat);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,26 +141,53 @@ export const TransactionForm: React.FC<Props> = ({ onClose, defaultMerchant }) =
 
           {/* App / Merchant Selector Grid */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-500 mb-2 uppercase">APP OR VENDOR</label>
-            <div className="grid grid-cols-3 gap-2">
-              {PRESET_MERCHANTS.map(m => {
-                const isSelected = merchant === m;
+            <div className="flex justify-between items-center mb-2">
+              <label className="block text-[11px] font-bold text-slate-500 uppercase">
+                {type === 'expense' ? 'MERCHANT / VENDOR' : 'CLIENT / SOURCE'}
+              </label>
+              <button
+                type="button"
+                onClick={() => setShowAddModal(true)}
+                className="text-xs text-indigo-600 hover:text-indigo-700 font-semibold flex items-center space-x-1"
+              >
+                <Plus size={13} />
+                <span>Add New</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 max-h-36 overflow-y-auto pr-0.5">
+              {availableEntities.map(m => {
+                const isSelected = merchant === m.name;
                 return (
                   <button
-                    key={m}
+                    key={m.id}
                     type="button"
-                    onClick={() => setMerchant(m)}
+                    onClick={() => handleSelectEntity(m.name, m.defaultCategory)}
                     className={`p-2 rounded-xl border flex items-center space-x-2 text-xs font-medium transition active:scale-95 ${
                       isSelected
                         ? 'bg-indigo-50 border-indigo-200 text-indigo-700 font-semibold shadow-xs'
                         : 'bg-slate-50 border-slate-200/80 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
-                    <MerchantIcon name={m} size="xs" />
-                    <span className="truncate">{m}</span>
+                    <MerchantIcon 
+                      name={m.name} 
+                      domain={m.domain}
+                      logoUrl={m.logoUrl}
+                      size="xs" 
+                    />
+                    <span className="truncate">{m.name}</span>
                   </button>
                 );
               })}
+
+              <button
+                type="button"
+                onClick={() => setShowAddModal(true)}
+                className="p-2 rounded-xl border border-dashed border-slate-200 hover:border-indigo-400 bg-slate-50/60 flex items-center justify-center space-x-1 text-xs text-slate-500 hover:text-indigo-600 transition"
+              >
+                <Plus size={13} />
+                <span>Custom</span>
+              </button>
             </div>
           </div>
 
@@ -146,7 +198,7 @@ export const TransactionForm: React.FC<Props> = ({ onClose, defaultMerchant }) =
               value={merchant}
               onChange={e => setMerchant(e.target.value)}
               className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-indigo-500 font-medium"
-              placeholder="Or type custom vendor name..."
+              placeholder={`Or type custom ${type === 'expense' ? 'vendor' : 'client'} name...`}
             />
           </div>
 
@@ -193,6 +245,15 @@ export const TransactionForm: React.FC<Props> = ({ onClose, defaultMerchant }) =
           </button>
         </form>
       </div>
+
+      {/* Add New Entity Modal */}
+      {showAddModal && (
+        <MerchantFormModal
+          onClose={() => setShowAddModal(false)}
+          defaultType={type === 'income' ? 'client' : 'merchant'}
+          onSuccess={(newName) => setMerchant(newName)}
+        />
+      )}
     </div>
   );
 };

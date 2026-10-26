@@ -7,20 +7,17 @@ import { ChevronLeft, ChevronRight, CheckCircle2, TrendingUp, Plus, ArrowUpRight
 import { v4 as uuidv4 } from 'uuid';
 import { MerchantIcon } from '../components/ui/MerchantIcon';
 import { TransactionForm } from '../components/forms/TransactionForm';
+import { MerchantFormModal } from '../components/forms/MerchantFormModal';
 import { Link } from 'react-router-dom';
 
-const FEATURED_APPS = [
-  'Swiggy', 'Zomato', 'Blinkit', 'Zepto', 
-  'Amazon', 'Flipkart', 'Uber', 'Netflix'
-];
-
 const PRESET_CATEGORIES = [
-  'Food & Dining', 'Shopping', 'Transport', 'Subscriptions', 'Other'
+  'Food & Dining', 'Groceries', 'Shopping', 'Transport', 'Subscriptions', 'Other'
 ];
 
 const Dashboard: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 9, 10)); // October 2026 default
   const [selectedMerchantModal, setSelectedMerchantModal] = useState<string | null>(null);
+  const [showAddBrandModal, setShowAddBrandModal] = useState(false);
   const [successToast, setSuccessToast] = useState<string | null>(null);
 
   const monthStart = startOfMonth(currentDate);
@@ -40,6 +37,14 @@ const Dashboard: React.FC = () => {
     () => db.monthlyIncomes.where('month').equals(monthKey).first(),
     [monthKey]
   );
+
+  // Dynamic Merchants from Database
+  const allMerchants = useLiveQuery(() => db.merchants.toArray(), []);
+  
+  const featuredBrands = allMerchants?.filter(m => m.isFeatured && (m.type === 'merchant' || m.type === 'both')) || [];
+  const displayBrands = featuredBrands.length > 0 
+    ? featuredBrands 
+    : (allMerchants?.filter(m => m.type !== 'client') || []).slice(0, 8);
 
   const [accruedRecurring, setAccruedRecurring] = useState(0);
 
@@ -76,6 +81,13 @@ const Dashboard: React.FC = () => {
   const [quickAmount, setQuickAmount] = useState('');
   const [quickMerchant, setQuickMerchant] = useState('Swiggy');
   const [quickCategory, setQuickCategory] = useState('Food & Dining');
+
+  // Update quick merchant default when merchants load
+  useEffect(() => {
+    if (displayBrands.length > 0 && !displayBrands.some(b => b.name === quickMerchant)) {
+      setQuickMerchant(displayBrands[0].name);
+    }
+  }, [displayBrands]);
 
   const handleQuickSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -151,7 +163,7 @@ const Dashboard: React.FC = () => {
         {/* Left Column (Hero & Analytics Outflows) */}
         <div className="lg:col-span-7 space-y-8">
           
-          {/* 1. Clear Visual Hierarchy: Dominant Available Balance Hero */}
+          {/* 1. Dominant Available Balance Hero */}
           <section className="modern-card p-6 md:p-8 space-y-6">
             <div className="flex justify-between items-start">
               <div className="space-y-1">
@@ -209,32 +221,70 @@ const Dashboard: React.FC = () => {
             </div>
           </section>
 
-          {/* 2. Fast Launch Brand Grid: 44px+ Touch Targets */}
+          {/* 2. Fast Launch Brand Grid: Dynamic from Database with Real Logos */}
           <section className="space-y-3.5">
             <div className="flex justify-between items-center px-1">
-              <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                Quick Log by Brand
-              </h2>
-              <span className="text-[11px] text-slate-400">1-Tap Fast Launch</span>
+              <div>
+                <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Quick Log by Brand
+                </h2>
+                <span className="text-[11px] text-slate-400">1-Tap Fast Launch</span>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setShowAddBrandModal(true)}
+                  className="text-xs text-indigo-600 hover:text-indigo-700 font-semibold flex items-center space-x-1 transition active:scale-95"
+                >
+                  <Plus size={13} strokeWidth={2.5} />
+                  <span>Add Brand</span>
+                </button>
+                <span className="text-slate-300">•</span>
+                <Link 
+                  to="/merchants" 
+                  className="text-xs text-slate-500 hover:text-slate-800 font-medium transition"
+                >
+                  Manage
+                </Link>
+              </div>
             </div>
 
             <div className="grid grid-cols-4 gap-3">
-              {FEATURED_APPS.map(appName => (
+              {displayBrands.map(merchant => (
                 <button
-                  key={appName}
+                  key={merchant.id}
                   onClick={() => {
-                    setSelectedMerchantModal(appName);
+                    setSelectedMerchantModal(merchant.name);
                   }}
-                  className="modern-card p-3 rounded-2xl flex flex-col items-center space-y-2 hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-200 min-h-[82px] justify-center group"
+                  className="modern-card p-3 rounded-2xl flex flex-col items-center space-y-2 hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-200 min-h-[84px] justify-center group"
                 >
                   <div className="p-1 rounded-xl bg-slate-100 border border-slate-200/80 shadow-xs group-hover:scale-105 transition-transform">
-                    <MerchantIcon name={appName} size="sm" className="rounded-lg" />
+                    <MerchantIcon 
+                      name={merchant.name} 
+                      domain={merchant.domain}
+                      logoUrl={merchant.logoUrl}
+                      size="sm" 
+                      className="rounded-lg" 
+                    />
                   </div>
                   <span className="text-xs font-medium text-slate-700 truncate max-w-[66px] text-center">
-                    {appName}
+                    {merchant.name}
                   </span>
                 </button>
               ))}
+
+              {/* Add New Brand Card in Grid */}
+              <button
+                onClick={() => setShowAddBrandModal(true)}
+                className="border-2 border-dashed border-slate-200 hover:border-indigo-400 bg-slate-50/60 p-3 rounded-2xl flex flex-col items-center justify-center space-y-1.5 hover:bg-slate-100/60 active:scale-95 transition-all min-h-[84px] group"
+              >
+                <div className="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 group-hover:scale-110 transition-transform">
+                  <Plus size={14} strokeWidth={2.5} />
+                </div>
+                <span className="text-[11px] font-semibold text-slate-500 group-hover:text-indigo-600">
+                  New Brand
+                </span>
+              </button>
             </div>
           </section>
 
@@ -243,7 +293,7 @@ const Dashboard: React.FC = () => {
             <div className="flex justify-between items-center px-1">
               <h2 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center space-x-1.5">
                 <TrendingUp size={14} className="text-indigo-600" />
-                <span>Top App Outflows</span>
+                <span>Top Outflows</span>
               </h2>
               <Link to="/insights" className="text-xs text-indigo-600 hover:text-indigo-700 font-semibold flex items-center space-x-0.5">
                 <span>View Analytics</span>
@@ -276,7 +326,7 @@ const Dashboard: React.FC = () => {
                           ₹{item.amount.toLocaleString('en-IN')}
                         </span>
                         <span className="text-[10px] text-slate-400 font-medium">
-                          #{idx + 1} Merchant
+                          #{idx + 1} Outflow
                         </span>
                       </div>
                     </div>
@@ -320,17 +370,30 @@ const Dashboard: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">
-                    MERCHANT
-                  </label>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      VENDOR
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddBrandModal(true)}
+                      className="text-[10px] text-indigo-600 hover:underline font-semibold"
+                    >
+                      + New
+                    </button>
+                  </div>
                   <select
                     value={quickMerchant}
                     onChange={e => setQuickMerchant(e.target.value)}
                     className="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl px-3 text-xs text-slate-800 font-medium focus:border-indigo-500 focus:outline-none"
                   >
-                    {FEATURED_APPS.map(app => (
-                      <option key={app} value={app} className="bg-white text-slate-800">{app}</option>
-                    ))}
+                    {(allMerchants && allMerchants.length > 0) ? (
+                      allMerchants.map(app => (
+                        <option key={app.id} value={app.name} className="bg-white text-slate-800">{app.name}</option>
+                      ))
+                    ) : (
+                      <option value="Swiggy">Swiggy</option>
+                    )}
                   </select>
                 </div>
 
@@ -394,6 +457,14 @@ const Dashboard: React.FC = () => {
         <TransactionForm
           defaultMerchant={selectedMerchantModal}
           onClose={() => setSelectedMerchantModal(null)}
+        />
+      )}
+
+      {/* Add New Brand Modal */}
+      {showAddBrandModal && (
+        <MerchantFormModal
+          onClose={() => setShowAddBrandModal(false)}
+          defaultType="merchant"
         />
       )}
     </div>
