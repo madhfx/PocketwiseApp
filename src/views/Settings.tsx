@@ -182,16 +182,19 @@ const Settings: React.FC = () => {
     <div className="space-y-6 font-sans">
       {/* iOS Header */}
       <header className="flex justify-between items-center pt-1">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-full glass-pill flex items-center justify-center text-xs">
-            <SlidersHorizontal size={15} className="text-blue-400" />
+        <div className="flex items-center space-x-2.5">
+          <div className="w-9 h-9 rounded-full glass-pill flex items-center justify-center text-xs shadow-inner">
+            <SlidersHorizontal size={16} className="text-blue-400" />
           </div>
-          <h1 className="text-lg font-bold tracking-tight text-white">Settings</h1>
+          <div>
+            <h1 className="text-lg font-bold tracking-tight text-white leading-none">Settings</h1>
+            <p className="text-[11px] text-zinc-400 mt-0.5">Preferences & Database</p>
+          </div>
         </div>
       </header>
 
       {/* iOS Profile Header Card */}
-      <div className="glass-card rounded-[28px] p-5 flex items-center space-x-4">
+      <div className="glass-card rounded-[32px] p-5 flex items-center space-x-4">
         <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-500 via-indigo-500 to-purple-600 p-[2px] shadow-lg shrink-0">
           <div className="w-full h-full bg-black/80 rounded-full flex items-center justify-center text-white text-xl">
             <User size={24} />
@@ -203,7 +206,7 @@ const Settings: React.FC = () => {
           <p className="text-xs text-zinc-400 mt-0.5 truncate">
             {totalTxCount || 0} recorded transactions • {totalRulesCount || 0} active rules
           </p>
-          <span className="inline-block mt-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/20">
+          <span className="inline-block mt-1.5 text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/20">
             Encrypted Local PWA
           </span>
         </div>
@@ -215,11 +218,11 @@ const Settings: React.FC = () => {
           FINANCIAL CONFIGURATION
         </span>
 
-        <div className="glass-card rounded-[28px] p-5 space-y-3">
+        <div className="glass-card rounded-[28px] p-5 space-y-3.5">
           <div className="flex justify-between items-center">
             <div>
               <h3 className="text-xs font-bold text-white">Monthly Take-Home Salary</h3>
-              <p className="text-[11px] text-zinc-400 mt-0.5">Used for budget calculations</p>
+              <p className="text-[11px] text-zinc-400 mt-0.5">Basis for available spend & savings rate</p>
             </div>
             {incomeSaved && (
               <span className="text-xs text-emerald-400 font-semibold flex items-center space-x-1">
@@ -236,13 +239,13 @@ const Settings: React.FC = () => {
                 type="number"
                 value={baseSalary}
                 onChange={e => setBaseSalary(e.target.value)}
-                className="w-full glass-card-subtle rounded-2xl pl-8 pr-4 py-2.5 text-sm font-semibold text-white focus:outline-none focus:border-white/20 transition"
+                className="w-full h-11 glass-card-subtle rounded-2xl pl-8 pr-4 text-sm font-semibold text-white focus:outline-none focus:border-white/20 transition"
                 placeholder="e.g. 125000"
               />
             </div>
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2.5 rounded-2xl text-xs font-semibold transition active:scale-95 shadow-md shadow-blue-500/25"
+              className="h-11 px-5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl text-xs font-semibold transition active:scale-95 shadow-md shadow-blue-500/25 shrink-0"
             >
               Update
             </button>
@@ -258,8 +261,8 @@ const Settings: React.FC = () => {
 
         <div className="glass-card rounded-[28px] p-5 space-y-4">
           <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-xl bg-blue-500/15 border border-blue-500/25 flex items-center justify-center text-blue-400">
-              <Cloud size={16} />
+            <div className="w-9 h-9 rounded-2xl bg-blue-500/15 border border-blue-500/25 flex items-center justify-center text-blue-400 shrink-0">
+              <Cloud size={17} />
             </div>
             <div>
               <h3 className="text-xs font-bold text-white">Google Drive Backup</h3>
@@ -277,12 +280,12 @@ const Settings: React.FC = () => {
                 value={clientId}
                 onChange={e => setClientId(e.target.value)}
                 placeholder="xxxx-xxxx.apps.googleusercontent.com"
-                className="w-full glass-card-subtle rounded-2xl px-3.5 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-white/20"
+                className="w-full h-11 glass-card-subtle rounded-2xl px-4 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-white/20"
               />
               <button
                 type="button"
                 onClick={handleSaveClientId}
-                className="glass-card-subtle hover:bg-white/10 text-white px-3.5 py-2 rounded-2xl text-xs font-semibold transition shrink-0 active:scale-95"
+                className="h-11 px-4 glass-card-subtle hover:bg-white/10 text-white rounded-2xl text-xs font-semibold transition shrink-0 active:scale-95"
               >
                 Save
               </button>
@@ -296,12 +299,12 @@ const Settings: React.FC = () => {
           )}
 
           {syncStatus && (
-            <div className={`p-3 rounded-2xl border text-xs flex items-center space-x-2 ${
+            <div className={`p-3.5 rounded-2xl border text-xs flex items-center space-x-2 ${
               syncStatus.success 
                 ? 'bg-emerald-500/15 border-emerald-500/25 text-emerald-400' 
                 : 'bg-rose-500/15 border-rose-500/25 text-rose-400'
             }`}>
-              {syncStatus.success ? <CheckCircle2 size={15} /> : <ShieldAlert size={15} />}
+              {syncStatus.success ? <CheckCircle2 size={16} /> : <ShieldAlert size={16} />}
               <span>{syncStatus.msg}</span>
             </div>
           )}
@@ -310,17 +313,19 @@ const Settings: React.FC = () => {
             <button
               onClick={handleDriveBackup}
               disabled={isSyncing}
-              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold py-2.5 rounded-2xl transition disabled:opacity-50 active:scale-95 shadow-md shadow-blue-500/25 border border-white/20"
+              className="flex-1 h-11 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold rounded-2xl transition disabled:opacity-50 active:scale-95 shadow-md shadow-blue-500/25 border border-white/20 flex items-center justify-center space-x-1.5"
             >
-              {isSyncing ? 'Syncing...' : 'Backup to Drive'}
+              <Upload size={14} />
+              <span>{isSyncing ? 'Syncing...' : 'Backup to Drive'}</span>
             </button>
 
             <button
               onClick={handleDriveRestore}
               disabled={isSyncing}
-              className="flex-1 glass-card-subtle hover:bg-white/10 text-white text-xs font-semibold py-2.5 rounded-2xl transition disabled:opacity-50 active:scale-95"
+              className="flex-1 h-11 glass-card-subtle hover:bg-white/10 text-white text-xs font-semibold rounded-2xl transition disabled:opacity-50 active:scale-95 flex items-center justify-center space-x-1.5"
             >
-              {isSyncing ? 'Restoring...' : 'Restore from Drive'}
+              <Download size={14} />
+              <span>{isSyncing ? 'Restoring...' : 'Restore from Drive'}</span>
             </button>
           </div>
         </div>
@@ -332,20 +337,20 @@ const Settings: React.FC = () => {
           DATA MANAGEMENT
         </span>
 
-        <div className="glass-card rounded-[28px] p-5 space-y-3">
+        <div className="glass-card rounded-[28px] p-5 space-y-3.5">
           <h3 className="text-xs font-bold text-white">Manual Export & Import</h3>
           <p className="text-[11px] text-zinc-400">Export a `.json` snapshot of your local database.</p>
 
           <div className="flex gap-2.5 pt-1">
             <button
               onClick={handleExport}
-              className="flex-1 glass-card-subtle hover:bg-white/10 text-zinc-200 text-xs font-medium py-2.5 rounded-2xl transition flex items-center justify-center space-x-1.5 active:scale-95"
+              className="flex-1 h-11 glass-card-subtle hover:bg-white/10 text-zinc-200 text-xs font-medium rounded-2xl transition flex items-center justify-center space-x-1.5 active:scale-95"
             >
               <Download size={14} />
               <span>Export JSON</span>
             </button>
 
-            <label className="flex-1 glass-card-subtle hover:bg-white/10 text-zinc-200 text-xs font-medium py-2.5 rounded-2xl transition flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95">
+            <label className="flex-1 h-11 glass-card-subtle hover:bg-white/10 text-zinc-200 text-xs font-medium rounded-2xl transition flex items-center justify-center space-x-1.5 cursor-pointer active:scale-95">
               <Upload size={14} />
               <span>Import JSON</span>
               <input type="file" accept=".json" onChange={handleImport} className="hidden" />
@@ -355,8 +360,8 @@ const Settings: React.FC = () => {
       </div>
 
       {/* Privacy Guarantee Banner */}
-      <div className="glass-card rounded-[26px] p-4 text-xs text-zinc-400 flex items-start space-x-3">
-        <Shield size={17} className="text-blue-400 shrink-0 mt-0.5" />
+      <div className="glass-card rounded-[26px] p-4.5 text-xs text-zinc-400 flex items-start space-x-3">
+        <Shield size={18} className="text-blue-400 shrink-0 mt-0.5" />
         <p className="text-[11px] leading-relaxed">
           Pocketwise is zero-knowledge: your finances are stored inside your device's IndexedDB and never uploaded to any remote server.
         </p>

@@ -51,22 +51,25 @@ const Transactions: React.FC = () => {
     <div className="space-y-6 font-sans">
       {/* iOS Header */}
       <header className="flex justify-between items-center pt-1">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-full glass-pill flex items-center justify-center text-xs">
-            <Receipt size={15} className="text-purple-400" />
+        <div className="flex items-center space-x-2.5">
+          <div className="w-9 h-9 rounded-full glass-pill flex items-center justify-center text-xs shadow-inner">
+            <Receipt size={16} className="text-purple-400" />
           </div>
-          <h1 className="text-lg font-bold tracking-tight text-white">Activity</h1>
+          <div>
+            <h1 className="text-lg font-bold tracking-tight text-white leading-none">Activity</h1>
+            <p className="text-[11px] text-zinc-400 mt-0.5">Transaction Timeline</p>
+          </div>
         </div>
-        <span className="text-xs text-zinc-400 font-medium glass-pill px-2.5 py-1 rounded-full">
+        <span className="text-xs text-zinc-400 font-medium glass-pill px-3 py-1 rounded-full">
           {filtered?.length || 0} entries
         </span>
       </header>
 
       {/* Glass Search & Filter Controls */}
       <div className="space-y-3">
-        {/* Search Bar */}
-        <div className="glass-card-subtle rounded-2xl flex items-center px-3.5 py-2 focus-within:border-white/25 transition">
-          <Search size={15} className="text-zinc-400 mr-2 shrink-0" />
+        {/* Search Bar - 44px min touch target */}
+        <div className="glass-card-subtle h-11 rounded-2xl flex items-center px-4 focus-within:border-white/25 transition-all">
+          <Search size={16} className="text-zinc-400 mr-2.5 shrink-0" />
           <input
             type="text"
             placeholder="Search merchants, notes, categories..."
@@ -75,19 +78,19 @@ const Transactions: React.FC = () => {
             className="w-full bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none"
           />
           {searchTerm && (
-            <button onClick={() => setSearchTerm('')} className="text-zinc-400 hover:text-white p-0.5">
-              <X size={14} />
+            <button onClick={() => setSearchTerm('')} className="text-zinc-400 hover:text-white p-1">
+              <X size={15} />
             </button>
           )}
         </div>
 
         {/* Filter Pills */}
-        <div className="flex space-x-1.5 overflow-x-auto scrollbar-none text-xs font-medium">
+        <div className="flex space-x-2 overflow-x-auto scrollbar-none text-xs font-medium pb-1">
           {(['all', 'expense', 'income', 'recurring'] as const).map(type => (
             <button
               key={type}
               onClick={() => setFilterType(type)}
-              className={`px-3 py-1.5 rounded-xl capitalize transition-all shrink-0 active:scale-95 ${
+              className={`h-9 px-4 rounded-xl capitalize transition-all shrink-0 active:scale-95 ${
                 filterType === type
                   ? 'bg-white/20 text-white border border-white/20 shadow-sm font-semibold'
                   : 'glass-card-subtle text-zinc-400 hover:text-white'
@@ -99,25 +102,25 @@ const Transactions: React.FC = () => {
         </div>
       </div>
 
-      {/* Apple Wallet Style Grouped Cards */}
+      {/* Activity Timeline */}
       {filtered && filtered.length === 0 ? (
         <div className="glass-card rounded-[28px] p-10 text-center">
           <p className="text-zinc-300 font-semibold text-sm">No transactions found</p>
-          <p className="text-zinc-500 text-xs mt-1">Transactions you add will appear in this timeline.</p>
+          <p className="text-zinc-500 text-xs mt-1">Try clearing filters or add a new transaction.</p>
         </div>
       ) : (
-        <div className="space-y-5">
+        <div className="space-y-6">
           {Object.keys(grouped).map(dateLabel => {
             const txs = grouped[dateLabel]!;
             const dayTotal = txs.reduce((sum, t) => sum + (t.type === 'expense' ? -t.amount : t.amount), 0);
 
             return (
-              <div key={dateLabel} className="space-y-2">
+              <div key={dateLabel} className="space-y-2.5">
                 <div className="flex justify-between items-center px-2">
                   <h3 className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
                     {dateLabel}
                   </h3>
-                  <span className={`text-xs font-bold ${dayTotal <= 0 ? 'text-zinc-400' : 'text-emerald-400'}`}>
+                  <span className={`text-xs font-bold ${dayTotal <= 0 ? 'text-zinc-300' : 'text-emerald-400'}`}>
                     {dayTotal < 0 ? `-₹${Math.abs(dayTotal).toLocaleString('en-IN')}` : `+₹${dayTotal.toLocaleString('en-IN')}`}
                   </span>
                 </div>
@@ -129,11 +132,11 @@ const Transactions: React.FC = () => {
                     return (
                       <div 
                         key={tx.id} 
-                        className="p-3.5 flex items-center justify-between hover:bg-white/[0.04] transition group"
+                        className="p-4 flex items-center justify-between hover:bg-white/[0.04] transition group"
                       >
-                        <div className="flex items-center space-x-3 min-w-0">
-                          <div className="p-0.5 rounded-[14px] bg-gradient-to-b from-white/15 to-white/5 border border-white/10 shadow-sm">
-                            <MerchantIcon name={tx.merchantName} size="md" className="rounded-[12px]" />
+                        <div className="flex items-center space-x-3.5 min-w-0">
+                          <div className="p-0.5 rounded-[16px] bg-gradient-to-b from-white/15 to-white/5 border border-white/10 shadow-sm shrink-0">
+                            <MerchantIcon name={tx.merchantName} size="md" className="rounded-[14px]" />
                           </div>
 
                           <div className="min-w-0">
@@ -152,7 +155,7 @@ const Transactions: React.FC = () => {
                               {tx.note && (
                                 <>
                                   <span>•</span>
-                                  <span className="truncate max-w-[120px] text-zinc-300">{tx.note}</span>
+                                  <span className="truncate max-w-[130px] text-zinc-300">{tx.note}</span>
                                 </>
                               )}
                             </div>
@@ -172,10 +175,10 @@ const Transactions: React.FC = () => {
 
                           <button 
                             onClick={(e) => handleDelete(tx.id, e)}
-                            className="opacity-0 group-hover:opacity-100 p-1.5 text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition"
+                            className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 transition active:scale-90"
                             title="Delete transaction"
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={15} />
                           </button>
                         </div>
                       </div>
