@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db/database';
 import { format } from 'date-fns';
-import { Cloud, Download, Upload, ShieldAlert, CheckCircle2, Shield, SlidersHorizontal, User } from 'lucide-react';
+import { Cloud, Download, Upload, ShieldAlert, CheckCircle2, Shield, SlidersHorizontal, User, RefreshCw } from 'lucide-react';
 import { GoogleDriveService } from '../services/googleDriveService';
 
 const Settings: React.FC = () => {
@@ -176,6 +176,22 @@ const Settings: React.FC = () => {
       setSyncStatus({ success: false, msg: e.message || 'Restore failed.' });
     }
     setIsSyncing(false);
+  };
+
+  const handleForceUpdate = async () => {
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of registrations) {
+        await registration.unregister();
+      }
+    }
+    if ('caches' in window) {
+      const cacheKeys = await caches.keys();
+      for (const key of cacheKeys) {
+        await caches.delete(key);
+      }
+    }
+    window.location.reload();
   };
 
   return (
@@ -356,6 +372,28 @@ const Settings: React.FC = () => {
               <input type="file" accept=".json" onChange={handleImport} className="hidden" />
             </label>
           </div>
+        </div>
+      </div>
+
+      {/* PWA Update & Clear Cache */}
+      <div className="space-y-2">
+        <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider px-3">
+          APPLICATION UPDATES
+        </span>
+
+        <div className="glass-card rounded-[28px] p-5 space-y-3">
+          <div>
+            <h3 className="text-xs font-bold text-white">App Version: v1.1.0</h3>
+            <p className="text-[11px] text-zinc-400 mt-0.5">Clear offline cache and force reload latest UI</p>
+          </div>
+
+          <button
+            onClick={handleForceUpdate}
+            className="w-full h-11 bg-white/10 hover:bg-white/15 text-white text-xs font-semibold rounded-2xl transition flex items-center justify-center space-x-2 active:scale-95 border border-white/10 shadow-sm"
+          >
+            <RefreshCw size={14} />
+            <span>Force Reload & Clear PWA Cache</span>
+          </button>
         </div>
       </div>
 
